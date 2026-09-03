@@ -103,8 +103,8 @@ class Flappy:
             if self.player.collided(self.pipes, self.floor):
                 entity = self.player.crash_entity
                 if entity == "pipe":
-                    upper, lower = self.pipes.pair_touching(self.player)
-                    self.pipes.mark_pair(upper, lower)
+                    pipe, edge = self.pipes.pipe_touching(self.player)
+                    self.pipes.mark_single(pipe, edge)
                 elif entity == "floor":
                     self.pipes.mark_spot(self.player.cx, self.floor.y)
                 # flew away: no crash effect

@@ -32,7 +32,8 @@ class Pipes(Entity):
         # ground burst (falls). No effect for fly-aways.
         self.hit_image = None
         self.spot_image = None
-        self.marked_ids = set()
+        # Impact flashes: marked pipe -> rim edge. Fresh each run.
+        self.marked = {}
         self.spots = []
         try:
             img = pygame.image.load("assets/sprites/hit.png").convert_alpha()
@@ -64,32 +65,34 @@ class Pipes(Entity):
             pipe.vel_x = 0
 
     def mark_pair(self, upper, lower) -> None:
-        """Flash the gap edges of one tower pair until reset."""
+        """Flash both rims (countdown finale — nothing was hit)."""
         if upper is not None and lower is not None:
-            self.marked_ids.add(id(upper))
-            self.marked_ids.add(id(lower))
+            self.marked[upper] = "bottom"
+            self.marked[lower] = "top"
+
+    def mark_single(self, pipe, edge) -> None:
+        """Flash only the pipe that was actually hit."""
+        if pipe is not None:
+            self.marked[pipe] = edge
 
     def mark_spot(self, x: float, y: float) -> None:
-        """Flash one free point (ground line, sky exit) until reset."""
+        """Flash one free point (ground line) until reset."""
         self.spots.append((x, y))
 
-    def pair_touching(self, player):
-        """Return the (upper, lower) pair touching the player, if any."""
+    def pipe_touching(self, player):
+        """Return (pipe, edge) for the pipe touching the player, if any."""
         for upper, lower in zip(self.upper, self.lower):
-            if player.collide(upper) or player.collide(lower):
-                return upper, lower
+            if player.collide(upper):
+                return upper, "bottom"
+            if player.collide(lower):
+                return lower, "top"
         return None, None
 
     def draw_markers(self) -> None:
         """Draw impact flashes. Call every frame; frozen world keeps them."""
         if self.hit_image is not None:
             w, h = self.hit_image.get_size()
-            edges = [(p, "bottom") for p in self.upper] + [
-                (p, "top") for p in self.lower
-            ]
-            for pipe, edge in edges:
-                if id(pipe) not in self.marked_ids:
-                    continue
+            for pipe, edge in self.marked.items():
                 x = pipe.x + (pipe.w - w) / 2
                 if edge == "bottom":  # upper tower: flash at its bottom rim
                     y = pipe.y + pipe.h - h / 2

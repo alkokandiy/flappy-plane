@@ -185,10 +185,10 @@ export class Game {
 
   onCrash() {
     this.beginOverScreen(this.score, this.player.crashEntity);
-    // Impact flash: tower rims for pipe hits, ground burst for falls.
-    // No effect for fly-aways.
+    // Impact flash: only the tower that was actually hit.
     if (this.player.crashEntity === "pipe") {
-      this.pipes.markPair(this.pipes.pairTouching(this.player.hitbox));
+      const [pipe, edge] = this.pipes.pipeTouching(this.player.hitbox);
+      this.pipes.markSingle(pipe, edge);
     } else if (this.player.crashEntity === "floor") {
       this.pipes.markSpot(this.player.cx, this.floor.y);
     }

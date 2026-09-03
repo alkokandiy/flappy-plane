@@ -100,10 +100,9 @@ export class Pipes {
     this.hitImg = hitImg; // tower rims (pipe crashes)
     this.groundImg = groundImg; // ground line (falls)
     this.pairs = [];
-    // Impact flashes: marked pairs (pipe rims) + free spots (ground/sky).
-    // Cleared automatically: marks live on this instance and reset()
-    // builds a fresh Pipes.
-    this.marked = new Set();
+    // Impact flashes: marked pipe -> rim edge. Cleared automatically:
+    // marks live on this instance and reset() builds a fresh Pipes.
+    this.marked = new Map();
     this.spots = [];
     this.spawnInitial();
   }
@@ -143,14 +142,13 @@ export class Pipes {
     }
   }
   render(ctx) {
-    for (const pair of this.pairs) {
-      const [u, l] = pair;
+    for (const [u, l] of this.pairs) {
       u.render(ctx);
       l.render(ctx);
-      if (this.marked.has(pair)) {
-        this.renderMarker(ctx, u, "bottom", 110); // upper: big flash, bottom
-        this.renderMarker(ctx, l, "top", 110); // lower: big flash, top
-      }
+    }
+    // One flash per hit pipe (upper: bottom rim, lower: top rim).
+    for (const [pipe, edge] of this.marked) {
+      this.renderMarker(ctx, pipe, edge, 110);
     }
     for (const spot of this.spots) {
       this.renderSpot(ctx, spot.x, spot.y, 140);
@@ -158,23 +156,28 @@ export class Pipes {
   }
 
   markPair(pair) {
-    if (pair) this.marked.add(pair);
+    // Both rims (countdown finale — nothing was hit).
+    if (pair) {
+      this.marked.set(pair[0], "bottom");
+      this.marked.set(pair[1], "top");
+    }
+  }
+
+  markSingle(pipe, edge) {
+    // Only the pipe that was actually hit.
+    if (pipe) this.marked.set(pipe, edge);
   }
 
   markSpot(x, y) {
     this.spots.push({ x, y });
   }
 
-  pairTouching(box) {
-    for (const pair of this.pairs) {
-      if (
-        rectsOverlap(box, pair[0].rect) ||
-        rectsOverlap(box, pair[1].rect)
-      ) {
-        return pair;
-      }
+  pipeTouching(box) {
+    for (const [u, l] of this.pairs) {
+      if (rectsOverlap(box, u.rect)) return [u, "bottom"];
+      if (rectsOverlap(box, l.rect)) return [l, "top"];
     }
-    return null;
+    return [null, null];
   }
 
   renderMarker(ctx, pipe, edge, w = 110) {
