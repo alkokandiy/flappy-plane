@@ -95,9 +95,10 @@ export class PipePair {
 }
 
 export class Pipes {
-  constructor(img, hitImg = null) {
+  constructor(img, hitImg = null, groundImg = null) {
     this.img = img;
-    this.hitImg = hitImg;
+    this.hitImg = hitImg; // tower rims (pipe crashes)
+    this.groundImg = groundImg; // ground line (falls)
     this.pairs = [];
     // Impact flashes: marked pairs (pipe rims) + free spots (ground/sky).
     // Cleared automatically: marks live on this instance and reset()
@@ -187,11 +188,11 @@ export class Pipes {
   }
 
   renderSpot(ctx, x, y, w = 140) {
-    if (!this.hitImg) return;
-    const natW = this.hitImg.naturalWidth || this.hitImg.width;
-    const natH = this.hitImg.naturalHeight || this.hitImg.height;
+    if (!this.groundImg) return;
+    const natW = this.groundImg.naturalWidth || this.groundImg.width;
+    const natH = this.groundImg.naturalHeight || this.groundImg.height;
     const h = (w * natH) / natW;
-    ctx.drawImage(this.hitImg, x - w / 2, y - h / 2, w, h);
+    ctx.drawImage(this.groundImg, x - w / 2, y - h / 2, w, h);
   }
 }
 

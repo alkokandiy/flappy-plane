@@ -107,9 +107,7 @@ class Flappy:
                     self.pipes.mark_pair(upper, lower)
                 elif entity == "floor":
                     self.pipes.mark_spot(self.player.cx, self.floor.y)
-                else:  # flew away: flash where it left the top edge
-                    x = min(max(self.player.cx, 0), self.config.window.width)
-                    self.pipes.mark_spot(x, self.player.h / 2)
+                # flew away: no crash effect
                 return
 
             for i, pipe in enumerate(self.pipes.upper):

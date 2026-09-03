@@ -3,7 +3,7 @@
 // unified input for mouse (PC), touch (mobile) and keyboard.
 // Rendering is side-effect free: update() owns all simulation.
 
-import { WIDTH, LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
+import { LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
 import { IntroUI } from "./ui.js";
@@ -29,7 +29,7 @@ export class Game {
     this.background = new Background(this.assets.backgrounds);
     this.floor = new Floor(this.assets.base);
     this.player = new Player(this.assets.plane);
-    this.pipes = new Pipes(this.assets.pipe, this.assets.hit);
+    this.pipes = new Pipes(this.assets.pipe, this.assets.hit, this.assets.groundHit);
     this.score = START_SCORE;
     this.lastPassedPair = null;
     this.state = "splash"; // splash | play | over
@@ -185,16 +185,12 @@ export class Game {
 
   onCrash() {
     this.beginOverScreen(this.score, this.player.crashEntity);
-    // Flash the impact: crashed tower rims, ground line, or sky exit.
+    // Impact flash: tower rims for pipe hits, ground burst for falls.
+    // No effect for fly-aways.
     if (this.player.crashEntity === "pipe") {
       this.pipes.markPair(this.pipes.pairTouching(this.player.hitbox));
     } else if (this.player.crashEntity === "floor") {
       this.pipes.markSpot(this.player.cx, this.floor.y);
-    } else {
-      this.pipes.markSpot(
-        Math.min(Math.max(this.player.cx, 0), WIDTH),
-        this.player.h / 2
-      );
     }
     // Music keeps playing through the game-over screen; retry restarts it.
     if (this.player.crashEntity === "pipe") {

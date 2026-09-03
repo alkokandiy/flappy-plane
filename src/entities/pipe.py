@@ -28,8 +28,8 @@ class Pipes(Entity):
         self.bottom = self.config.window.viewport_height
         self.upper = []
         self.lower = []
-        # Impact flash shown at crash sites. Two sizes: wide bursts for
-        # tower rims, even wider for ground/sky spots.
+        # Impact flashes: tower-rim bursts (pipe hits) and a separate
+        # ground burst (falls). No effect for fly-aways.
         self.hit_image = None
         self.spot_image = None
         self.marked_ids = set()
@@ -39,9 +39,12 @@ class Pipes(Entity):
             w = 110
             h = int(w * img.get_height() / img.get_width())
             self.hit_image = pygame.transform.scale(img, (w, h))
+            gimg = pygame.image.load(
+                "assets/sprites/groundhit.png"
+            ).convert_alpha()
             w2 = 140
-            h2 = int(w2 * img.get_height() / img.get_width())
-            self.spot_image = pygame.transform.scale(img, (w2, h2))
+            h2 = int(w2 * gimg.get_height() / gimg.get_width())
+            self.spot_image = pygame.transform.scale(gimg, (w2, h2))
         except Exception:
             self.hit_image = None
             self.spot_image = None

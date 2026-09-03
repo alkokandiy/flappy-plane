@@ -12,12 +12,13 @@ function loadImage(src) {
 
 export async function loadAssets(base = "assets") {
   const s = `${base}/sprites`;
-  const [bgDay, bgNight, baseImg, pipe, hit, ...rest] = await Promise.all([
+  const [bgDay, bgNight, baseImg, pipe, hit, groundHit, ...rest] = await Promise.all([
     loadImage(`${s}/background-day.png`),
     loadImage(`${s}/background-night.png`),
     loadImage(`${s}/base.png`),
     loadImage(`${s}/pipe-skyscraper.png`),
     loadImage(`${base}/hit.webp`),
+    loadImage(`${base}/groundhit.webp`),
     loadImage(`${s}/plane-upflap.png`),
     loadImage(`${s}/plane-midflap.png`),
     loadImage(`${s}/plane-downflap.png`),
@@ -29,6 +30,7 @@ export async function loadAssets(base = "assets") {
     base: baseImg,
     pipe,
     hit,
+    groundHit,
     plane: [up, mid, down],
     numbers,
   };
