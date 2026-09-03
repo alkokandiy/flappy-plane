@@ -60,8 +60,8 @@ export class SoundFX {
     this.noise({ dur: 0.08, vol: 0.03, freq: 2500 });
   }
   point() {
-    this.tone({ from: 880, to: 880, dur: 0.07, type: "square", vol: 0.12 });
-    this.tone({ from: 1320, to: 1320, dur: 0.12, type: "square", vol: 0.12, when: 0.07 });
+    this.tone({ from: 880, to: 880, dur: 0.07, type: "square", vol: 0.04 });
+    this.tone({ from: 1320, to: 1320, dur: 0.12, type: "square", vol: 0.04, when: 0.07 });
   }
   hit() {
     this.noise({ dur: 0.25, vol: 0.4, freq: 400 });

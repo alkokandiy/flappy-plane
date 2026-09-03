@@ -23,3 +23,5 @@ class Sounds:
         self.wing = pygame.mixer.Sound(f"assets/audio/wing.{ext}")
         # Barely-there flutter so rapid tapping doesn't get annoying.
         self.wing.set_volume(0.1)
+        # Score blip, kept quiet for the same reason.
+        self.point.set_volume(0.4)
