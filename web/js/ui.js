@@ -7,8 +7,9 @@
 const CRASH_TITLES = {
   // hit a tower
   pipe: ["We are so blessed", "We are the chosen ones"],
-  // fell to the ground / flew away (shared set)
-  floor: ["We're finished", "What a shame.", "Are you kidding me?"],
+  // fell to the ground
+  floor: ["What a shame.", "Wasted!", "What a pity"],
+  // flew away
   sky: ["We're finished", "What a shame.", "Are you kidding me?"],
 };
 
