@@ -95,9 +95,14 @@ export class PipePair {
 }
 
 export class Pipes {
-  constructor(img) {
+  constructor(img, hitImg = null) {
     this.img = img;
+    this.hitImg = hitImg;
     this.pairs = [];
+    // Pairs carrying an impact flash (crash site or final countdown
+    // tower). Cleared automatically: marks live on this instance and
+    // reset() builds a fresh Pipes.
+    this.marked = new Set();
     this.spawnInitial();
   }
   get upper() {
@@ -136,10 +141,42 @@ export class Pipes {
     }
   }
   render(ctx) {
-    for (const [u, l] of this.pairs) {
+    for (const pair of this.pairs) {
+      const [u, l] = pair;
       u.render(ctx);
       l.render(ctx);
+      if (this.marked.has(pair)) {
+        this.renderMarker(ctx, u, "bottom"); // upper tower: flash at bottom
+        this.renderMarker(ctx, l, "top"); // lower tower: flash at top
+      }
     }
+  }
+
+  markPair(pair) {
+    if (pair) this.marked.add(pair);
+  }
+
+  pairTouching(box) {
+    for (const pair of this.pairs) {
+      if (
+        rectsOverlap(box, pair[0].rect) ||
+        rectsOverlap(box, pair[1].rect)
+      ) {
+        return pair;
+      }
+    }
+    return null;
+  }
+
+  renderMarker(ctx, pipe, edge) {
+    if (!this.hitImg) return;
+    const natW = this.hitImg.naturalWidth || this.hitImg.width;
+    const natH = this.hitImg.naturalHeight || this.hitImg.height;
+    const w = 64;
+    const h = (w * natH) / natW;
+    const x = pipe.x + (pipe.w - w) / 2;
+    const y = edge === "bottom" ? pipe.y + pipe.h - h / 2 : pipe.y - h / 2;
+    ctx.drawImage(this.hitImg, x, y, w, h);
   }
 }
 
