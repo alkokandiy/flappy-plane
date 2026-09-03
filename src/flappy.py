@@ -106,6 +106,9 @@ class Flappy:
             for i, pipe in enumerate(self.pipes.upper):
                 if self.player.crossed(pipe):
                     self.score.add()
+                    if self.score.score <= 0:
+                        # Countdown finished: run ends on the lose screen.
+                        return
 
             for event in pygame.event.get():
                 self.check_quit_event(event)

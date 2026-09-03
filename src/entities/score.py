@@ -11,10 +11,11 @@ class Score(Entity):
         self.score = 0
 
     def reset(self) -> None:
-        self.score = 0
+        # Countdown mode: start at 11, every cleared tower is -1.
+        self.score = 11
 
     def add(self) -> None:
-        self.score += 1
+        self.score = max(0, self.score - 1)
         self.config.sounds.point.play()
 
     @property

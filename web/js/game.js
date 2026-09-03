@@ -3,7 +3,7 @@
 // unified input for mouse (PC), touch (mobile) and keyboard.
 // Rendering is side-effect free: update() owns all simulation.
 
-import { LAYOUT, STEP, BEST_KEY } from "./config.js";
+import { LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
 import { IntroUI } from "./ui.js";
@@ -27,7 +27,7 @@ export class Game {
     this.floor = new Floor(this.assets.base);
     this.player = new Player(this.assets.plane);
     this.pipes = new Pipes(this.assets.pipe);
-    this.score = 0;
+    this.score = START_SCORE;
     this.state = "splash"; // splash | play | over
     this.landed = false;
   }
@@ -92,16 +92,14 @@ export class Game {
       }
       for (const pipe of this.pipes.upper) {
         if (this.player.crossed(pipe)) {
-          this.score += 1;
+          this.score -= 1;
           this.sfx.point();
-          if (this.score > this.best) {
-            this.best = this.score;
-            try {
-              localStorage.setItem(BEST_KEY, String(this.best));
-            } catch {
-              /* private mode etc. */
-            }
+          if (this.score <= 0) {
+            this.score = 0;
+            this.onCountdownComplete();
+            return;
           }
+          this.notePass();
         }
       }
       this.floor.tick();
@@ -114,6 +112,38 @@ export class Game {
         this.landed = true;
       }
     }
+  }
+
+  // Best = most towers cleared in one run (START_SCORE - lowest left).
+  notePass() {
+    const passes = START_SCORE - this.score;
+    if (passes > this.best) {
+      this.best = passes;
+      this.saveBest();
+    }
+  }
+
+  saveBest() {
+    try {
+      localStorage.setItem(BEST_KEY, String(this.best));
+    } catch {
+      /* private mode etc. */
+    }
+  }
+
+  onCountdownComplete() {
+    // Countdown reached 0: the run ends on the ground-style lose page.
+    this.state = "over";
+    this.landed = false;
+    this.player.setMode("crash");
+    this.pipes.stop();
+    this.floor.stop();
+    const isNew = START_SCORE > this.best;
+    if (isNew) {
+      this.best = START_SCORE;
+      this.saveBest();
+    }
+    this.ui.showGameOver(0, this.best, isNew, "floor");
   }
 
   onCrash() {
@@ -131,10 +161,17 @@ export class Game {
     }
     this.pipes.stop();
     this.floor.stop();
+    // Crashing with lives left shows the cause-based pipe-hit page.
+    const passes = START_SCORE - this.score;
+    const isNew = passes > this.best;
+    if (isNew) {
+      this.best = passes;
+      this.saveBest();
+    }
     this.ui.showGameOver(
       this.score,
       this.best,
-      this.score > 0 && this.score >= this.best,
+      isNew,
       this.player.crashEntity
     );
   }

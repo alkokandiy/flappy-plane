@@ -10,6 +10,10 @@ export const FLOOR_H = HEIGHT - VIEWPORT_H;
 
 export const STEP = 1 / 30;
 
+// Countdown mode: you start with 11, every cleared tower is -1,
+// reaching 0 finishes the run on the lose page.
+export const START_SCORE = 11;
+
 // Player (plane) physics
 export const PLAYER = {
   w: 80,
