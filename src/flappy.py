@@ -101,13 +101,17 @@ class Flappy:
 
         while True:
             if self.player.collided(self.pipes, self.floor):
+                upper, lower = self.pipes.pair_touching(self.player)
+                self.pipes.mark_pair(upper, lower)
                 return
 
             for i, pipe in enumerate(self.pipes.upper):
                 if self.player.crossed(pipe):
                     self.score.add()
                     if self.score.score <= 0:
-                        # Countdown finished: run ends on the lose screen.
+                        # Countdown finished: flash the final tower.
+                        if i < len(self.pipes.lower):
+                            self.pipes.mark_pair(pipe, self.pipes.lower[i])
                         return
 
             for event in pygame.event.get():
@@ -118,6 +122,7 @@ class Flappy:
             self.background.tick()
             self.floor.tick()
             self.pipes.tick()
+            self.pipes.draw_markers()
             self.score.tick()
             self.player.tick()
 
@@ -144,6 +149,7 @@ class Flappy:
             self.background.tick()
             self.floor.tick()
             self.pipes.tick()
+            self.pipes.draw_markers()
             self.score.tick()
             self.player.tick()
             self.game_over_message.tick()
