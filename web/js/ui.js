@@ -42,7 +42,7 @@ export class IntroUI {
   }
 
   showIntro(best) {
-    this.el.classList.remove("gameover");
+    this.el.classList.remove("gameover", "cause-pipe", "cause-floor", "cause-sky");
     this.title.innerHTML = "FLAPPY<br />PLANE";
     this.panel.hidden = true;
     this.playBtn.textContent = "▶ PLAY";
