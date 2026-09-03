@@ -6,13 +6,7 @@
 // Crash titles by cause of death — a random one every time.
 const CRASH_TITLES = {
   // hit a tower
-  pipe: [
-    "Good job!",
-    "We did it!",
-    "Boom!",
-    "We are so blessed",
-    "We are the chosen ones",
-  ],
+  pipe: ["We are so blessed", "We are the chosen ones"],
   // fell to the ground / flew away (shared set)
   floor: ["We're finished", "What a shame.", "Are you kidding me?"],
   sky: ["We're finished", "What a shame.", "Are you kidding me?"],
