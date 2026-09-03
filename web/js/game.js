@@ -237,7 +237,11 @@ export class Game {
       );
     }
     this.background.draw(ctx);
-    this.pipes.render(ctx, alpha);
+    // No towers on the intro screen (like the original): they appear
+    // the moment you hit play.
+    if (this.state !== "splash") {
+      this.pipes.render(ctx, alpha);
+    }
     this.floor.render(ctx, alpha);
     this.player.render(ctx, alpha);
     ctx.restore();

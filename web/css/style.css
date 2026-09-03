@@ -265,6 +265,58 @@ body {
 
 /* end overlay */
 
+/* Compact overlay for short landscape (laptop) screens: everything
+   must fit inside 100dvh with room to spare. */
+.screen.landscape .overlay {
+  gap: 0.55em;
+  padding: 0.6em;
+}
+
+.screen.landscape .title {
+  font-size: 2em;
+}
+
+.screen.landscape .overlay.win .title {
+  font-size: 0.95em;
+}
+
+.screen.landscape .badge {
+  font-size: 0.5em;
+  padding: 0.6em 1em;
+}
+
+.screen.landscape .ready {
+  font-size: 0.8em;
+}
+
+.screen.landscape #winVideo {
+  width: min(58%, 40dvh);
+}
+
+.screen.landscape #loseImg {
+  width: min(58%, 30dvh);
+}
+
+.screen.landscape .panel {
+  width: auto;
+  min-width: 16em;
+  padding: 0.6em 0.9em;
+}
+
+.screen.landscape .panel .row {
+  font-size: 0.68em;
+  padding: 0.35em 0;
+}
+
+.screen.landscape #playBtn {
+  font-size: 0.95em;
+  padding: 0.8em 1.6em;
+}
+
+.screen.landscape .hint {
+  font-size: 0.5em;
+}
+
 #loading {
   color: #fff;
   font-size: 18px;
