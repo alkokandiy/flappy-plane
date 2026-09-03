@@ -39,8 +39,8 @@ export const PLAYER = {
 export const PIPES = {
   w: 52,
   h: 320,
-  gap: 150,
-  speed: 4.5, // px per tick (moves left)
+  gap: 160,
+  speed: 4, // px per tick (moves left)
   spawnX: WIDTH + 10, // 298
 };
 

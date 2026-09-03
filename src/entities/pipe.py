@@ -8,7 +8,7 @@ from .entity import Entity
 class Pipe(Entity):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.vel_x = -4.5
+        self.vel_x = -4
 
     def draw(self) -> None:
         self.x += self.vel_x
@@ -21,7 +21,7 @@ class Pipes(Entity):
 
     def __init__(self, config: GameConfig) -> None:
         super().__init__(config)
-        self.pipe_gap = 150
+        self.pipe_gap = 160
         self.top = 0
         self.bottom = self.config.window.viewport_height
         self.upper = []

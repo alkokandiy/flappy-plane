@@ -41,17 +41,20 @@ body {
   display: block;
 }
 
-/* 9:16 cabinet shared by the canvas and the intro overlay */
+/* 9:16 cabinet shared by the canvas and the intro overlay.
+   1em here = cabinet width / 24, so the whole UI scales
+   proportionally on any screen and can never overflow. */
 .screen {
   position: relative;
   width: min(100vw, calc(100dvh * 9 / 16));
   aspect-ratio: 9 / 16;
+  font-size: calc(min(100vw, calc(100dvh * 9 / 16)) / 24);
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
   overflow: hidden;
-  background: #70c5ce;
+  background: #101010;
 }
 
-/* ---------- Retro arcade intro overlay ---------- */
+/* ---------- 90s retro intro overlay ---------- */
 
 :root {
   --px: "Press Start 2P", "Courier New", monospace;
@@ -64,8 +67,9 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3.2vmin;
-  padding: 4vmin;
+  gap: 0.9em;
+  padding: 1em;
+  font-size: 1em;
   text-align: center;
   pointer-events: none;
   background: radial-gradient(
@@ -93,48 +97,41 @@ body {
 
 .badge {
   font-family: var(--px);
-  font-size: clamp(9px, 2.4vmin, 13px);
+  font-size: 0.62em;
   letter-spacing: 0.35em;
   text-indent: 0.35em;
   color: #d6d6d6;
-  text-shadow: 2px 2px 0 #000;
-  border: 2px solid #8a8a8a;
-  border-radius: 4px;
-  padding: 0.8em 1.2em;
+  text-shadow: 0.15em 0.15em 0 #000;
+  border: 0.15em solid #8a8a8a;
+  border-radius: 0.3em;
+  padding: 0.7em 1em;
   background: #1a1a1a;
-  box-shadow: inset 2px 2px 0 #3d3d3d, inset -2px -2px 0 #000;
+  box-shadow: inset 0.15em 0.15em 0 #3d3d3d, inset -0.15em -0.15em 0 #000;
 }
 
 .hero-plane {
-  width: clamp(96px, 30vmin, 168px);
+  width: 7.5em;
   height: auto;
-  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55));
   animation: float 2.6s ease-in-out infinite;
 }
 
 .title {
   font-family: var(--px);
-  font-size: clamp(30px, 9vmin, 60px);
-  line-height: 1.12;
-  background: linear-gradient(180deg, #fafafa 20%, #c9c9c9 55%, #7d7d7d 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(4px 4px 0 #0a0a0a);
+  font-size: 2.7em;
+  line-height: 1.15;
+  color: #ededed;
+  text-shadow: 0.08em 0.08em 0 #000;
 }
 
 .overlay.gameover .title {
-  background: linear-gradient(180deg, #fff6d8 15%, #ffd23e 50%, #b07a00 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #ffd23e;
 }
 
 .ready {
   font-family: var(--px);
-  font-size: clamp(11px, 3vmin, 17px);
+  font-size: 0.95em;
   color: #ffe878;
-  text-shadow: 2px 2px 0 #000;
-  animation: blink 1.2s steps(2, start) infinite;
+  text-shadow: 0.15em 0.15em 0 #000;
 }
 
 .overlay.gameover .ready {
@@ -143,12 +140,12 @@ body {
 
 .panel {
   font-family: var(--px);
-  min-width: min(64%, 240px);
+  min-width: 65%;
   background: #141414;
-  border: 3px solid #000;
-  box-shadow: 0 0 0 2px #8a8a8a, 6px 6px 0 rgba(0, 0, 0, 0.55);
-  border-radius: 4px;
-  padding: 2.4vmin 3vmin;
+  border: 0.2em solid #000;
+  box-shadow: 0 0 0 0.15em #8a8a8a, 0.4em 0.4em 0 rgba(0, 0, 0, 0.55);
+  border-radius: 0.3em;
+  padding: 0.8em 1em;
 }
 
 .panel[hidden] {
@@ -160,7 +157,7 @@ body {
   justify-content: space-between;
   align-items: baseline;
   gap: 2em;
-  font-size: clamp(10px, 2.8vmin, 15px);
+  font-size: 0.78em;
   color: #a8a8a8;
   padding: 0.5em 0;
 }
@@ -168,15 +165,14 @@ body {
 .panel .row strong {
   color: #fff;
   font-size: 1.35em;
-  text-shadow: 2px 2px 0 #000;
+  text-shadow: 0.12em 0.12em 0 #000;
 }
 
 .newbest {
   margin-top: 0.6em;
-  font-size: clamp(10px, 2.8vmin, 15px);
+  font-size: 0.8em;
   color: #ffe878;
-  text-shadow: 2px 2px 0 #000;
-  animation: blink 0.9s steps(2, start) infinite;
+  text-shadow: 0.15em 0.15em 0 #000;
 }
 
 .newbest[hidden] {
@@ -186,13 +182,13 @@ body {
 #playBtn {
   pointer-events: auto;
   font-family: var(--px);
-  font-size: clamp(15px, 4vmin, 23px);
+  font-size: 1.15em;
   color: #2b1a00;
   background: linear-gradient(180deg, #ffe878 0%, #f5a623 100%);
-  border: 3px solid #000;
-  box-shadow: 0 0 0 2px #8a8a8a, 0 6px 0 #000;
-  border-radius: 6px;
-  padding: 1em 2em;
+  border: 0.18em solid #000;
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.35em 0 #000;
+  border-radius: 0.4em;
+  padding: 0.9em 1.8em;
   cursor: pointer;
 }
 
@@ -201,39 +197,31 @@ body {
 }
 
 #playBtn:active {
-  transform: translateY(5px);
-  box-shadow: 0 0 0 2px #8a8a8a, 0 1px 0 #000;
+  transform: translateY(0.3em);
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.05em 0 #000;
 }
 
 .hint {
   font-family: var(--px);
-  font-size: clamp(8px, 2.2vmin, 12px);
+  font-size: 0.6em;
   letter-spacing: 0.18em;
   text-indent: 0.18em;
   color: rgba(255, 255, 255, 0.75);
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+  text-shadow: 0.15em 0.15em 0 rgba(0, 0, 0, 0.8);
 }
 
 @keyframes float {
   0%,
   100% {
-    transform: translateY(-6px) rotate(-2deg);
+    transform: translateY(-0.35em) rotate(-2deg);
   }
   50% {
-    transform: translateY(8px) rotate(2deg);
-  }
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0.25;
+    transform: translateY(0.45em) rotate(2deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-plane,
-  .ready,
-  .newbest {
+  .hero-plane {
     animation: none;
   }
 }
