@@ -3,17 +3,6 @@
 // Pointer events pass through except on the button, so canvas taps,
 // touch and keyboard keep working everywhere.
 
-// Shown instead of "GAME OVER" — a random one every crash.
-const CRASH_TITLES = [
-  "We're finished",
-  "What a shame.",
-  "Are you kidding me?",
-  "Forget it, it's over.",
-  "What a blessing!",
-  "We are so blessed",
-  "We are the chosen ones",
-];
-
 export class IntroUI {
   constructor(onPlay) {
     this.el = document.getElementById("intro");
@@ -48,8 +37,7 @@ export class IntroUI {
 
   showGameOver(score, best, isNewBest) {
     this.el.classList.add("gameover");
-    this.title.textContent =
-      CRASH_TITLES[Math.floor(Math.random() * CRASH_TITLES.length)];
+    this.title.innerHTML = "GAME<br />OVER";
     this.panel.hidden = false;
     this.finalScore.textContent = String(score);
     this.bestScore.textContent = String(best);
