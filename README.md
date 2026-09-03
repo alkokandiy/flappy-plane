@@ -14,6 +14,8 @@ Desktop version (Python/pygame, same game logic):
 1. `pip install pygame`
 2. `python3 main.py` — music lives in `assets/music/`.
 
+![Flappy Plane gameplay](web/screenshot.png)
+
 ---
 Original base: [FlapPyBird](https://sourabhv.github.io/FlapPyBird)
 

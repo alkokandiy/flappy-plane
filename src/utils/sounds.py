@@ -21,3 +21,5 @@ class Sounds:
         self.point = pygame.mixer.Sound(f"assets/audio/point.{ext}")
         self.swoosh = pygame.mixer.Sound(f"assets/audio/swoosh.{ext}")
         self.wing = pygame.mixer.Sound(f"assets/audio/wing.{ext}")
+        # Barely-there flutter so rapid tapping doesn't get annoying.
+        self.wing.set_volume(0.1)

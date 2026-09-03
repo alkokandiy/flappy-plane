@@ -56,7 +56,8 @@ export class SoundFX {
   }
 
   wing() {
-    this.noise({ dur: 0.12, vol: 0.2, freq: 2500 });
+    // Barely-there flutter so rapid tapping doesn't get annoying.
+    this.noise({ dur: 0.08, vol: 0.03, freq: 2500 });
   }
   point() {
     this.tone({ from: 880, to: 880, dur: 0.07, type: "square", vol: 0.12 });
