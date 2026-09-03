@@ -12,25 +12,20 @@ function loadImage(src) {
 
 export async function loadAssets(base = "assets") {
   const s = `${base}/sprites`;
-  const [bgDay, bgNight, baseImg, gameOver, message, pipe, ...rest] =
-    await Promise.all([
-      loadImage(`${s}/background-day.png`),
-      loadImage(`${s}/background-night.png`),
-      loadImage(`${s}/base.png`),
-      loadImage(`${s}/gameover.png`),
-      loadImage(`${s}/message.png`),
-      loadImage(`${s}/pipe-skyscraper.png`),
-      loadImage(`${s}/plane-upflap.png`),
-      loadImage(`${s}/plane-midflap.png`),
-      loadImage(`${s}/plane-downflap.png`),
-      ...Array.from({ length: 10 }, (_, n) => loadImage(`${s}/${n}.png`)),
-    ]);
+  const [bgDay, bgNight, baseImg, pipe, ...rest] = await Promise.all([
+    loadImage(`${s}/background-day.png`),
+    loadImage(`${s}/background-night.png`),
+    loadImage(`${s}/base.png`),
+    loadImage(`${s}/pipe-skyscraper.png`),
+    loadImage(`${s}/plane-upflap.png`),
+    loadImage(`${s}/plane-midflap.png`),
+    loadImage(`${s}/plane-downflap.png`),
+    ...Array.from({ length: 10 }, (_, n) => loadImage(`${s}/${n}.png`)),
+  ]);
   const [up, mid, down, ...numbers] = rest;
   return {
     backgrounds: [bgDay, bgNight],
     base: baseImg,
-    gameOver,
-    message,
     pipe,
     plane: [up, mid, down],
     numbers,

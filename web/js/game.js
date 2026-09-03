@@ -121,8 +121,14 @@ export class Game {
     this.landed = false;
     this.player.setMode("crash");
     // Music keeps playing through the game-over screen; retry restarts it.
-    this.sfx.hit();
-    if (this.player.crashEntity === "pipe") this.sfx.die();
+    if (this.player.crashEntity === "pipe") {
+      this.sfx.hit();
+      this.sfx.die();
+    } else if (this.player.crashEntity === "floor") {
+      this.sfx.hit();
+    } else {
+      this.sfx.die(); // flew away: whistle on the way down
+    }
     this.pipes.stop();
     this.floor.stop();
     this.ui.showGameOver(

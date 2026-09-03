@@ -4,7 +4,15 @@
 // touch and keyboard keep working everywhere.
 
 // Shown instead of "GAME OVER" — a random one every crash.
-const CRASH_TITLES = ["Good job!", "We did it!", "Boom!"];
+const CRASH_TITLES = [
+  "We're finished",
+  "What a shame.",
+  "Are you kidding me?",
+  "Forget it, it's over.",
+  "What a blessing!",
+  "We are so blessed",
+  "We are the chosen ones",
+];
 
 export class IntroUI {
   constructor(onPlay) {
@@ -19,7 +27,6 @@ export class IntroUI {
       e.preventDefault();
       onPlay();
     });
-    this.winVideo = document.getElementById("winVideo");
   }
 
   show() {
@@ -36,7 +43,6 @@ export class IntroUI {
     this.panel.hidden = true;
     this.playBtn.textContent = "▶ PLAY";
     this.bestScore.textContent = String(best);
-    this.stopWinVideo();
     this.show();
   }
 
@@ -49,25 +55,6 @@ export class IntroUI {
     this.bestScore.textContent = String(best);
     this.newBest.hidden = !isNewBest;
     this.playBtn.textContent = "↻ RETRY";
-    this.playWinVideo();
     this.show();
-  }
-
-  playWinVideo() {
-    try {
-      this.winVideo.currentTime = 0;
-      const p = this.winVideo.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch {
-      /* video optional */
-    }
-  }
-
-  stopWinVideo() {
-    try {
-      this.winVideo.pause();
-    } catch {
-      /* ignore */
-    }
   }
 }

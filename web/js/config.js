@@ -47,10 +47,8 @@ export const PIPES = {
 // Floor scroll
 export const FLOOR = { speed: 4 };
 
-// Layout (matches welcome_message.py / game_over.py / score.py)
+// Layout (score digits; intro/game-over text lives in the HTML overlay)
 export const LAYOUT = {
-  messageY: Math.floor(HEIGHT * 0.12),
-  gameOverY: Math.floor(HEIGHT * 0.2),
   scoreY: HEIGHT * 0.1,
 };
 

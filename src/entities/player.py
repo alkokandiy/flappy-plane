@@ -39,8 +39,12 @@ class Player(Entity):
             self.reset_vals_shm()
         elif mode == PlayerMode.CRASH:
             self.stop_wings()
-            self.config.sounds.hit.play()
             if self.crash_entity == "pipe":
+                self.config.sounds.hit.play()
+                self.config.sounds.die.play()
+            elif self.crash_entity == "floor":
+                self.config.sounds.hit.play()
+            else:  # flew away: whistle on the way down
                 self.config.sounds.die.play()
             self.reset_vals_crash()
 
@@ -146,6 +150,12 @@ class Player(Entity):
 
     def collided(self, pipes: Pipes, floor: Floor) -> bool:
         """returns True if player collides with floor or pipes."""
+
+        # if player flies off the top of the screen: lost
+        if self.y <= -self.h:
+            self.crashed = True
+            self.crash_entity = "sky"
+            return True
 
         # if player crashes into ground
         if self.collide(floor):

@@ -231,6 +231,12 @@ export class Player {
   }
   collided(pipes, floor) {
     const hb = this.hitbox;
+    // Flew off the top of the screen: lost.
+    if (this.y <= -this.h) {
+      this.crashed = true;
+      this.crashEntity = "sky";
+      return true;
+    }
     if (rectsOverlap(hb, floor.rect)) {
       this.crashed = true;
       this.crashEntity = "floor";
