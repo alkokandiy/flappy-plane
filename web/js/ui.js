@@ -5,9 +5,17 @@
 
 // Crash titles by cause of death — a random one every time.
 const CRASH_TITLES = {
-  pipe: ["Boom!", "Smashed!", "Direct hit!"], // hit a tower
-  floor: ["Gravity wins!", "Face down!", "Down you go!"], // fell down
-  sky: ["Come back!", "Too high!", "Lost in the clouds!"], // flew away
+  // hit a tower
+  pipe: [
+    "Good job!",
+    "We did it!",
+    "Boom!",
+    "We are so blessed",
+    "We are the chosen ones",
+  ],
+  // fell to the ground / flew away (shared set)
+  floor: ["We're finished", "What a shame.", "Are you kidding me?"],
+  sky: ["We're finished", "What a shame.", "Are you kidding me?"],
 };
 
 export class IntroUI {
