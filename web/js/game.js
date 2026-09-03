@@ -17,6 +17,9 @@ export class Game {
     this.music = new Music();
     this.best = Number(localStorage.getItem(BEST_KEY) || 0);
     this.ui = new IntroUI(() => this.pressPlay());
+    this.tickCount = 0;
+    // Crash-page delay (1.2s at 30Hz): show the impact first, then the page.
+    this.PANEL_DELAY_TICKS = 36;
     this.reset();
     this.ui.showIntro(this.best);
     this.bindInput();
@@ -83,6 +86,7 @@ export class Game {
   // --- fixed-timestep simulation ---
 
   update() {
+    this.tickCount += 1;
     if (this.state === "splash") {
       this.floor.tick();
       this.player.tick();
@@ -113,6 +117,21 @@ export class Game {
       if (this.player.y + this.player.h >= this.floor.y - 1) {
         this.landed = true;
       }
+      // Show the lost/win page 1.2s after the crash (and once landed),
+      // so the impact moment is visible first.
+      if (
+        !this.panelShown &&
+        this.landed &&
+        this.tickCount - this.overTick >= this.PANEL_DELAY_TICKS
+      ) {
+        this.panelShown = true;
+        this.ui.showGameOver(
+          this.overScore,
+          this.overBest,
+          this.overIsNew,
+          this.overCause
+        );
+      }
     }
   }
 
@@ -136,23 +155,34 @@ export class Game {
   onCountdownComplete() {
     // Countdown reached 0: flash the final tower, end on the lose page.
     this.pipes.markPair(this.lastPassedPair);
-    this.state = "over";
-    this.landed = false;
-    this.player.setMode("crash");
-    this.pipes.stop();
-    this.floor.stop();
+    this.beginOverScreen(0, "floor");
     const isNew = START_SCORE > this.best;
     if (isNew) {
       this.best = START_SCORE;
       this.saveBest();
     }
-    this.ui.showGameOver(0, this.best, isNew, "floor");
+    this.overBest = this.best;
+    this.overIsNew = isNew;
+  }
+
+  // Crash/page bookkeeping shared by both endings. The overlay itself
+  // appears later (see update()), after the impact is visible.
+  beginOverScreen(score, cause) {
+    this.state = "over";
+    this.landed = false;
+    this.panelShown = false;
+    this.overTick = this.tickCount;
+    this.overScore = score;
+    this.overBest = this.best;
+    this.overIsNew = false;
+    this.overCause = cause;
+    this.player.setMode("crash");
+    this.pipes.stop();
+    this.floor.stop();
   }
 
   onCrash() {
-    this.state = "over";
-    this.landed = false;
-    this.player.setMode("crash");
+    this.beginOverScreen(this.score, this.player.crashEntity);
     // Flash the crashed tower (pipe hits only).
     if (this.player.crashEntity === "pipe") {
       this.pipes.markPair(this.pipes.pairTouching(this.player.hitbox));
@@ -175,12 +205,8 @@ export class Game {
       this.best = passes;
       this.saveBest();
     }
-    this.ui.showGameOver(
-      this.score,
-      this.best,
-      isNew,
-      this.player.crashEntity
-    );
+    this.overBest = this.best;
+    this.overIsNew = isNew;
   }
 
   // --- rendering (no side effects) ---

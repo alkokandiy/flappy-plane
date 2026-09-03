@@ -138,6 +138,9 @@ class Flappy:
         # starting a new run restarts it.
         self.pipes.stop()
         self.floor.stop()
+        # Let the crash moment read first: the lose banner appears
+        # ~1.2s (36 ticks at 30fps) after the impact.
+        over_ticks = 0
 
         while True:
             for event in pygame.event.get():
@@ -152,7 +155,9 @@ class Flappy:
             self.pipes.draw_markers()
             self.score.tick()
             self.player.tick()
-            self.game_over_message.tick()
+            over_ticks += 1
+            if over_ticks >= 36:
+                self.game_over_message.tick()
 
             self.config.tick()
             pygame.display.update()
