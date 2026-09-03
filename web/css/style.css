@@ -99,10 +99,10 @@ body {
   display: none;
 }
 
+#winVideo,
 #loseImg {
   display: none;
   width: 72%;
-  height: auto;
   background: #000;
   border: 0.2em solid #000;
   box-shadow: 0 0 0 0.12em #8a8a8a;
@@ -110,7 +110,22 @@ body {
   pointer-events: none;
 }
 
-.overlay.gameover #loseImg {
+#winVideo {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+#loseImg {
+  height: auto;
+}
+
+/* Pipe crash: win video. Ground fall / fly away: lose picture. */
+.overlay.gameover.cause-pipe #winVideo {
+  display: block;
+}
+
+.overlay.gameover.cause-floor #loseImg,
+.overlay.gameover.cause-sky #loseImg {
   display: block;
 }
 

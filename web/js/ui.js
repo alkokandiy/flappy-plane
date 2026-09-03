@@ -3,6 +3,13 @@
 // Pointer events pass through except on the button, so canvas taps,
 // touch and keyboard keep working everywhere.
 
+// Crash titles by cause of death — a random one every time.
+const CRASH_TITLES = {
+  pipe: ["Boom!", "Smashed!", "Direct hit!"], // hit a tower
+  floor: ["Gravity wins!", "Face down!", "Down you go!"], // fell down
+  sky: ["Come back!", "Too high!", "Lost in the clouds!"], // flew away
+};
+
 export class IntroUI {
   constructor(onPlay) {
     this.el = document.getElementById("intro");
@@ -16,6 +23,7 @@ export class IntroUI {
       e.preventDefault();
       onPlay();
     });
+    this.winVideo = document.getElementById("winVideo");
   }
 
   show() {
@@ -35,14 +43,42 @@ export class IntroUI {
     this.show();
   }
 
-  showGameOver(score, best, isNewBest) {
+  showGameOver(score, best, isNewBest, cause = "pipe") {
     this.el.classList.add("gameover");
-    this.title.innerHTML = "GAME<br />OVER";
+    this.el.classList.remove("cause-pipe", "cause-floor", "cause-sky");
+    const safeCause = CRASH_TITLES[cause] ? cause : "pipe";
+    this.el.classList.add(`cause-${safeCause}`);
+    const titles = CRASH_TITLES[safeCause];
+    this.title.textContent =
+      titles[Math.floor(Math.random() * titles.length)];
     this.panel.hidden = false;
     this.finalScore.textContent = String(score);
     this.bestScore.textContent = String(best);
     this.newBest.hidden = !isNewBest;
     this.playBtn.textContent = "↻ RETRY";
+    if (safeCause === "pipe") {
+      this.playWinVideo();
+    } else {
+      this.stopWinVideo();
+    }
     this.show();
+  }
+
+  playWinVideo() {
+    try {
+      this.winVideo.currentTime = 0;
+      const p = this.winVideo.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch {
+      /* video optional */
+    }
+  }
+
+  stopWinVideo() {
+    try {
+      this.winVideo.pause();
+    } catch {
+      /* ignore */
+    }
   }
 }

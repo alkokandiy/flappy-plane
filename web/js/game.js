@@ -134,7 +134,8 @@ export class Game {
     this.ui.showGameOver(
       this.score,
       this.best,
-      this.score > 0 && this.score >= this.best
+      this.score > 0 && this.score >= this.best,
+      this.player.crashEntity
     );
   }
 
