@@ -9,11 +9,37 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Flappy Plane</title>
   <link rel="icon" type="image/png" href="assets/sprites/icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+    rel="stylesheet"
+  />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <main id="stage">
-    <canvas id="game"></canvas>
+    <div class="screen">
+      <canvas id="game"></canvas>
+      <div id="intro" class="overlay" hidden>
+        <div class="scan"></div>
+        <div class="badge">RETRO ARCADE</div>
+        <img
+          class="hero-plane"
+          src="assets/sprites/plane-midflap.png"
+          alt="Flappy Plane"
+        />
+        <h1 class="title">FLAPPY<br />PLANE</h1>
+        <div class="ready">★ GET READY ★</div>
+        <div class="panel" hidden>
+          <div class="row"><span>SCORE</span><strong id="finalScore">0</strong></div>
+          <div class="row"><span>BEST</span><strong id="bestScore">0</strong></div>
+          <div id="newBest" class="newbest" hidden>★ NEW BEST ★</div>
+        </div>
+        <button id="playBtn" type="button">▶ PLAY</button>
+        <div class="hint">SPACE / CLICK / TAP</div>
+      </div>
+    </div>
     <div id="loading">Loading…</div>
   </main>
   <!--

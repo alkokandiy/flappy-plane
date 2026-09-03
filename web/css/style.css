@@ -30,19 +30,230 @@ body {
 }
 
 #game {
-  /* Keep the 288:512 aspect, as large as the screen allows.
-     min() picks width-limit on wide screens, height-limit on tall ones. */
-  width: min(100vw, calc(100dvh * 9 / 16));
-  height: auto;
-  aspect-ratio: 9 / 16;
+  width: 100%;
+  height: 100%;
   display: none;
   touch-action: none;
   image-rendering: auto;
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
 }
 
 #game.ready {
   display: block;
+}
+
+/* 9:16 cabinet shared by the canvas and the intro overlay */
+.screen {
+  position: relative;
+  width: min(100vw, calc(100dvh * 9 / 16));
+  aspect-ratio: 9 / 16;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  background: #70c5ce;
+}
+
+/* ---------- Retro arcade intro overlay ---------- */
+
+:root {
+  --px: "Press Start 2P", "Courier New", monospace;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3.2vmin;
+  padding: 4vmin;
+  text-align: center;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(4, 6, 18, 0) 35%,
+    rgba(4, 6, 18, 0.62) 100%
+  );
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.16) 0 2px,
+    transparent 2px 4px
+  );
+  opacity: 0.55;
+}
+
+.badge {
+  font-family: var(--px);
+  font-size: clamp(9px, 2.4vmin, 13px);
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  color: #7df9ff;
+  text-shadow: 0 0 10px rgba(125, 249, 255, 0.8);
+  border: 1px solid rgba(125, 249, 255, 0.65);
+  border-radius: 999px;
+  padding: 0.8em 1.2em;
+  background: rgba(4, 8, 24, 0.6);
+}
+
+.hero-plane {
+  width: clamp(96px, 30vmin, 168px);
+  height: auto;
+  filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.55));
+  animation: float 2.6s ease-in-out infinite;
+}
+
+.title {
+  font-family: var(--px);
+  font-size: clamp(30px, 9vmin, 60px);
+  line-height: 1.12;
+  background: linear-gradient(
+    180deg,
+    #ffffff 15%,
+    #7df9ff 42%,
+    #2b6cff 72%,
+    #b537f2 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 0 #070b1d) drop-shadow(0 0 22px rgba(125, 249, 255, 0.35));
+}
+
+.overlay.gameover .title {
+  background: linear-gradient(180deg, #ffffff 15%, #ffd23e 45%, #ff5e3a 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.ready {
+  font-family: var(--px);
+  font-size: clamp(11px, 3vmin, 17px);
+  color: #ffe878;
+  text-shadow: 2px 2px 0 #6b2800, 0 0 14px rgba(255, 200, 60, 0.65);
+  animation: blink 1.2s steps(2, start) infinite;
+}
+
+.overlay.gameover .ready {
+  display: none;
+}
+
+.panel {
+  font-family: var(--px);
+  min-width: min(64%, 240px);
+  background: rgba(4, 8, 24, 0.78);
+  border: 2px solid rgba(125, 249, 255, 0.55);
+  border-radius: 12px;
+  padding: 2.4vmin 3vmin;
+  box-shadow: 0 0 24px rgba(43, 108, 255, 0.35), inset 0 0 18px rgba(43, 108, 255, 0.15);
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.panel .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 2em;
+  font-size: clamp(10px, 2.8vmin, 15px);
+  color: #8ea2c9;
+  padding: 0.5em 0;
+}
+
+.panel .row strong {
+  color: #fff;
+  font-size: 1.35em;
+  text-shadow: 0 0 10px rgba(125, 249, 255, 0.7);
+}
+
+.newbest {
+  margin-top: 0.6em;
+  font-size: clamp(10px, 2.8vmin, 15px);
+  color: #ffe878;
+  text-shadow: 0 0 12px rgba(255, 200, 60, 0.8);
+  animation: blink 0.9s steps(2, start) infinite;
+}
+
+.newbest[hidden] {
+  display: none;
+}
+
+#playBtn {
+  pointer-events: auto;
+  font-family: var(--px);
+  font-size: clamp(15px, 4vmin, 23px);
+  color: #3a1c00;
+  background: linear-gradient(180deg, #ffe878 0%, #ffb52e 100%);
+  border: 0;
+  border-radius: 14px;
+  padding: 1em 2em;
+  cursor: pointer;
+  box-shadow: 0 6px 0 #a35400, 0 12px 28px rgba(255, 180, 40, 0.45);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+
+#playBtn:hover {
+  filter: brightness(1.06);
+}
+
+#playBtn:active {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 #a35400, 0 4px 12px rgba(255, 180, 40, 0.4);
+  animation: none;
+}
+
+.hint {
+  font-family: var(--px);
+  font-size: clamp(8px, 2.2vmin, 12px);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.8);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(-6px) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(2deg);
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-plane,
+  .ready,
+  #playBtn,
+  .newbest {
+    animation: none;
+  }
 }
 
 #loading {

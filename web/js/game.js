@@ -3,9 +3,10 @@
 // unified input for mouse (PC), touch (mobile) and keyboard.
 // Rendering is side-effect free: update() owns all simulation.
 
-import { WIDTH, LAYOUT, STEP, BEST_KEY } from "./config.js";
+import { LAYOUT, STEP, BEST_KEY } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
+import { IntroUI } from "./ui.js";
 
 export class Game {
   constructor(canvas, assets) {
@@ -15,7 +16,9 @@ export class Game {
     this.sfx = new SoundFX();
     this.music = new Music();
     this.best = Number(localStorage.getItem(BEST_KEY) || 0);
+    this.ui = new IntroUI(() => this.pressPlay());
     this.reset();
+    this.ui.showIntro(this.best);
     this.bindInput();
   }
 
@@ -51,6 +54,12 @@ export class Game {
     this.music.findTrack();
   }
 
+  pressPlay() {
+    // PLAY / RETRY button: same path as tapping the screen.
+    this.sfx.unlock();
+    this.onTap();
+  }
+
   onTap() {
     if (this.state === "splash") {
       this.startPlay();
@@ -64,6 +73,7 @@ export class Game {
 
   startPlay() {
     this.state = "play";
+    this.ui.hide();
     this.player.setMode("normal");
     this.sfx.wing();
     this.music.start(); // music only during real gameplay
@@ -115,6 +125,11 @@ export class Game {
     if (this.player.crashEntity === "pipe") this.sfx.die();
     this.pipes.stop();
     this.floor.stop();
+    this.ui.showGameOver(
+      this.score,
+      this.best,
+      this.score > 0 && this.score >= this.best
+    );
   }
 
   // --- rendering (no side effects) ---
@@ -126,14 +141,10 @@ export class Game {
     this.floor.render(ctx);
     this.player.render(ctx);
 
-    if (this.state === "splash") {
-      const msg = this.assets.message;
-      ctx.drawImage(msg, (WIDTH - msg.width) / 2, LAYOUT.messageY);
-    }
-    drawScore(ctx, this.assets.numbers, this.score, LAYOUT.scoreY);
-    if (this.state === "over") {
-      const go = this.assets.gameOver;
-      ctx.drawImage(go, (WIDTH - go.width) / 2, LAYOUT.gameOverY);
+    // Score digits live on the canvas during play; the overlay panel
+    // shows the final score on the intro / game-over screens.
+    if (this.state === "play") {
+      drawScore(ctx, this.assets.numbers, this.score, LAYOUT.scoreY);
     }
   }
 
