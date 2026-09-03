@@ -54,6 +54,13 @@ body {
   background: #101010;
 }
 
+/* Landscape (PC): 16:9 world, same height and physics. */
+.screen.landscape {
+  width: min(100vw, calc(100dvh * 16 / 9));
+  aspect-ratio: 16 / 9;
+  font-size: calc(min(100vw, calc(100dvh * 16 / 9)) / 40);
+}
+
 /* ---------- 90s retro intro overlay ---------- */
 
 :root {

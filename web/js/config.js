@@ -3,8 +3,17 @@
 // Physics run on a fixed 30 Hz timestep (STEP), so these per-tick
 // values behave exactly like the original.
 
-export const WIDTH = 288;
+// World size. Height is fixed; width adapts once at boot:
+// portrait phones stay 288 wide, landscape screens (PC) go 16:9.
+// ES-module live bindings keep every importer in sync.
 export const HEIGHT = 512;
+export const PORTRAIT_W = 288;
+export const LANDSCAPE_W = 910; // 512 * 16 / 9
+export let WORLD_W = PORTRAIT_W;
+
+export function initWorld(landscape) {
+  WORLD_W = landscape ? LANDSCAPE_W : PORTRAIT_W;
+}
 export const VIEWPORT_H = HEIGHT * 0.79; // floor line (y = 404.48)
 export const FLOOR_H = HEIGHT - VIEWPORT_H;
 
@@ -18,7 +27,7 @@ export const START_SCORE = 11;
 export const PLAYER = {
   w: 80,
   h: 26,
-  startX: Math.floor(WIDTH * 0.2), // 57
+  startXFrac: 0.2,
   normal: {
     velY: -9,
     maxVelY: 10,
@@ -45,8 +54,12 @@ export const PIPES = {
   h: 320,
   gap: 160,
   speed: 4, // px per tick (moves left)
-  spawnX: WIDTH + 10, // 298
+  // spawnX is computed from WORLD_W at spawn time (spawnX() below).
 };
+
+export function spawnX() {
+  return WORLD_W + 10;
+}
 
 // Floor scroll
 export const FLOOR = { speed: 4 };

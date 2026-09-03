@@ -2,7 +2,7 @@
 // (src/entities/*.py); rendering uses Canvas 2D.
 
 import {
-  WIDTH,
+  WORLD_W,
   HEIGHT,
   VIEWPORT_H,
   PLAYER,
@@ -10,6 +10,7 @@ import {
   FLOOR,
   HITBOX_SHRINK_X,
   HITBOX_SHRINK_Y,
+  spawnX,
 } from "./config.js";
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -22,7 +23,11 @@ export class Background {
     this.img = Array.isArray(img) ? img[Math.floor(Math.random() * img.length)] : img;
   }
   draw(ctx) {
-    ctx.drawImage(this.img, 0, 0, WIDTH, HEIGHT);
+    // Tile the 288px sky across wide (landscape) worlds.
+    const w = this.img.naturalWidth || this.img.width;
+    for (let x = 0; x < WORLD_W; x += w) {
+      ctx.drawImage(this.img, x, 0, w, HEIGHT);
+    }
   }
 }
 
@@ -34,19 +39,21 @@ export class Floor {
     this.y = VIEWPORT_H;
     this.x = 0;
     this.velX = FLOOR.speed;
-    this.xExtra = this.w - WIDTH; // 336 - 288 = 48
+    this.tileW = this.w; // ground texture loops every tile
   }
   get rect() {
-    return { x: 0, y: this.y, w: WIDTH, h: HEIGHT - this.y };
+    return { x: 0, y: this.y, w: WORLD_W, h: HEIGHT - this.y };
   }
   stop() {
     this.velX = 0;
   }
   tick() {
-    this.x = -((-this.x + this.velX) % this.xExtra);
+    this.x = -((-this.x + this.velX) % this.tileW);
   }
   render(ctx) {
-    ctx.drawImage(this.img, this.x, this.y);
+    for (let x = this.x; x < WORLD_W; x += this.tileW) {
+      ctx.drawImage(this.img, x, this.y);
+    }
   }
 }
 
@@ -115,11 +122,11 @@ export class Pipes {
   canSpawn() {
     if (this.pairs.length === 0) return true;
     const last = this.pairs[this.pairs.length - 1][0];
-    return WIDTH - (last.x + last.w) > last.w * 2.5;
+    return WORLD_W - (last.x + last.w) > last.w * 2.5;
   }
   spawnInitial() {
     const [u1, l1] = PipePair.makeRandom(this.img, 0);
-    u1.x = l1.x = WIDTH + PIPES.w * 3;
+    u1.x = l1.x = WORLD_W + PIPES.w * 3;
     const [u2, l2] = PipePair.makeRandom(this.img, 0);
     u2.x = l2.x = u1.x + PIPES.w * 3.5;
     this.pairs.push([u1, l1], [u2, l2]);
@@ -132,7 +139,7 @@ export class Pipes {
   }
   tick() {
     if (this.canSpawn()) {
-      this.pairs.push(PipePair.makeRandom(this.img, PIPES.spawnX));
+      this.pairs.push(PipePair.makeRandom(this.img, spawnX()));
     }
     // Rebuild (never splice while iterating) and keep pairs intact.
     this.pairs = this.pairs.filter(([u]) => u.x >= -u.w);
@@ -206,7 +213,7 @@ export class Player {
     this.frames = frames; // [up, mid, down] plane images
     this.w = PLAYER.w;
     this.h = PLAYER.h;
-    this.x = PLAYER.startX;
+    this.x = Math.floor(WORLD_W * PLAYER.startXFrac);
     this.y = Math.floor((HEIGHT - this.h) / 2);
     this.minY = -2 * this.h;
     this.maxY = VIEWPORT_H - this.h * 0.75;
@@ -335,7 +342,7 @@ export function drawScore(ctx, numbers, score, y) {
     .split("")
     .map((d) => numbers[Number(d)]);
   const totalW = digits.reduce((s, im) => s + im.width, 0);
-  let x = (WIDTH - totalW) / 2;
+  let x = (WORLD_W - totalW) / 2;
   for (const im of digits) {
     ctx.drawImage(im, x, y);
     x += im.width;
