@@ -26,9 +26,8 @@ export class Game {
     this.background = new Background(this.assets.backgrounds);
     this.floor = new Floor(this.assets.base);
     this.player = new Player(this.assets.plane);
-    this.pipes = new Pipes(this.assets.pipe, this.assets.hit);
+    this.pipes = new Pipes(this.assets.pipe);
     this.score = START_SCORE;
-    this.lastPassedPair = null;
     this.state = "splash"; // splash | play | over
     this.landed = false;
   }
@@ -95,7 +94,6 @@ export class Game {
         if (this.player.crossed(pair[0])) {
           this.score -= 1;
           this.sfx.point();
-          this.lastPassedPair = pair;
           if (this.score <= 0) {
             this.score = 0;
             this.onCountdownComplete();
@@ -134,8 +132,7 @@ export class Game {
   }
 
   onCountdownComplete() {
-    // Countdown reached 0: flash the final tower, end on the lose page.
-    this.pipes.markPair(this.lastPassedPair);
+    // Countdown reached 0: the run ends on the lose page.
     this.state = "over";
     this.landed = false;
     this.player.setMode("crash");
@@ -153,10 +150,6 @@ export class Game {
     this.state = "over";
     this.landed = false;
     this.player.setMode("crash");
-    // Flash the crashed tower (pipe hits only).
-    if (this.player.crashEntity === "pipe") {
-      this.pipes.markPair(this.pipes.pairTouching(this.player.hitbox));
-    }
     // Music keeps playing through the game-over screen; retry restarts it.
     if (this.player.crashEntity === "pipe") {
       this.sfx.hit();
