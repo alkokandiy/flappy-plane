@@ -41,24 +41,23 @@ body {
   display: block;
 }
 
-/* 9:16 cabinet shared by the canvas and the intro overlay.
-   1em here = cabinet width / 24, so the whole UI scales
-   proportionally on any screen and can never overflow. */
+/* Fullscreen cabinet shared by the canvas and the intro overlay.
+   Backing store always matches the screen aspect (set in main.js),
+   so this fills every display with zero distortion and zero bars.
+   1em scales with cabinet width, capped on PC so text never blows up. */
 .screen {
   position: relative;
-  width: min(100vw, calc(100dvh * 9 / 16));
-  aspect-ratio: 9 / 16;
-  font-size: calc(min(100vw, calc(100dvh * 9 / 16)) / 24);
-  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  font-size: min(calc(100vw / 24), 20px);
   overflow: hidden;
   background: #101010;
 }
 
-/* Landscape (PC): 16:9 world, same height and physics. */
+/* Landscape (PC): roomier type scale, still capped. */
 .screen.landscape {
-  width: min(100vw, calc(100dvh * 16 / 9));
-  aspect-ratio: 16 / 9;
-  font-size: calc(min(100vw, calc(100dvh * 16 / 9)) / 40);
+  font-size: min(calc(100vw / 40), 26px);
 }
 
 /* ---------- 90s retro intro overlay ---------- */
@@ -109,7 +108,6 @@ body {
 #winVideo,
 #loseImg {
   display: none;
-  width: 72%;
   background: #000;
   border: 0.2em solid #000;
   box-shadow: 0 0 0 0.12em #8a8a8a;
@@ -117,12 +115,17 @@ body {
   pointer-events: none;
 }
 
+/* Measured to fit cabinet height on PC and width on phones. */
 #winVideo {
+  width: min(72%, 60vh);
+  width: min(72%, 60dvh);
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
 #loseImg {
+  width: min(72%, 42vh);
+  width: min(72%, 42dvh);
   height: auto;
 }
 
@@ -189,7 +192,8 @@ body {
 
 .panel {
   font-family: var(--px);
-  min-width: 65%;
+  width: 65%;
+  max-width: 420px;
   background: #141414;
   border: 0.2em solid #000;
   box-shadow: 0 0 0 0.15em #8a8a8a, 0.4em 0.4em 0 rgba(0, 0, 0, 0.55);

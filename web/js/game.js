@@ -222,7 +222,7 @@ export class Game {
 
   // --- rendering (no side effects) ---
 
-  render() {
+  render(alpha = 1) {
     const ctx = this.ctx;
     // Screen shake right after a crash (render-only, never touches logic).
     const sinceOver = this.tickCount - (this.overTick || 0);
@@ -237,9 +237,9 @@ export class Game {
       );
     }
     this.background.draw(ctx);
-    this.pipes.render(ctx);
-    this.floor.render(ctx);
-    this.player.render(ctx);
+    this.pipes.render(ctx, alpha);
+    this.floor.render(ctx, alpha);
+    this.player.render(ctx, alpha);
     ctx.restore();
 
     // Score digits live on the canvas during play; the overlay panel
@@ -259,7 +259,8 @@ export class Game {
         this.update();
         acc -= STEP;
       }
-      this.render();
+      // Interpolated render: glassy motion on 60/120Hz displays.
+      this.render(Math.min(acc / STEP, 1));
       requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);

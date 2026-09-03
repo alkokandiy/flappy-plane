@@ -11,6 +11,8 @@ import {
   HITBOX_SHRINK_X,
   HITBOX_SHRINK_Y,
   spawnX,
+  spawnGap,
+  speedFactor,
 } from "./config.js";
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -38,7 +40,8 @@ export class Floor {
     this.h = img.naturalHeight || img.height;
     this.y = VIEWPORT_H;
     this.x = 0;
-    this.velX = FLOOR.speed;
+    this.px = 0;
+    this.velX = FLOOR.speed * speedFactor();
     this.tileW = this.w; // ground texture loops every tile
   }
   get rect() {
@@ -48,10 +51,12 @@ export class Floor {
     this.velX = 0;
   }
   tick() {
+    this.px = this.x;
     this.x = -((-this.x + this.velX) % this.tileW);
   }
-  render(ctx) {
-    for (let x = this.x; x < WORLD_W; x += this.tileW) {
+  render(ctx, a = 1) {
+    const x0 = this.px + (this.x - this.px) * a;
+    for (let x = x0; x < WORLD_W; x += this.tileW) {
       ctx.drawImage(this.img, x, this.y);
     }
   }
@@ -61,10 +66,11 @@ export class Pipe {
   constructor(img, x, y, flipped) {
     this.img = img;
     this.x = x;
+    this.px = x;
     this.y = y;
     this.w = PIPES.w;
     this.h = PIPES.h;
-    this.velX = -PIPES.speed;
+    this.velX = -PIPES.speed * speedFactor();
     this.flipped = flipped;
   }
   get cx() {
@@ -74,17 +80,21 @@ export class Pipe {
     return { x: this.x, y: this.y, w: this.w, h: this.h };
   }
   tick() {
+    this.px = this.x;
     this.x += this.velX;
   }
-  render(ctx) {
+  render(ctx, a = 1) {
+    // Interpolated x: buttery motion on 60/120Hz screens even though
+    // physics steps at 30Hz. Collisions always use stepped positions.
+    const x = this.px + (this.x - this.px) * a;
     if (this.flipped) {
       ctx.save();
-      ctx.translate(this.x, this.y + this.h);
+      ctx.translate(x, this.y + this.h);
       ctx.scale(1, -1);
       ctx.drawImage(this.img, 0, 0, this.w, this.h);
       ctx.restore();
     } else {
-      ctx.drawImage(this.img, this.x, this.y, this.w, this.h);
+      ctx.drawImage(this.img, x, this.y, this.w, this.h);
     }
   }
 }
@@ -122,13 +132,21 @@ export class Pipes {
   canSpawn() {
     if (this.pairs.length === 0) return true;
     const last = this.pairs[this.pairs.length - 1][0];
-    return WORLD_W - (last.x + last.w) > last.w * 2.5;
+    return WORLD_W - (last.x + last.w) > spawnGap();
   }
   spawnInitial() {
+    // Portrait numbers are the classic tuned values. Wide screens start
+    // the action ~1.7s in with rhythm scaled to match.
+    const legacy = WORLD_W <= 300;
+    const f = speedFactor();
+    const x1 = legacy
+      ? WORLD_W + PIPES.w * 3
+      : WORLD_W * PLAYER.startXFrac + PIPES.speed * f * 50;
+    const gap = legacy ? PIPES.w * 3.5 : spawnGap() + PIPES.w;
     const [u1, l1] = PipePair.makeRandom(this.img, 0);
-    u1.x = l1.x = WORLD_W + PIPES.w * 3;
+    u1.x = l1.x = x1;
     const [u2, l2] = PipePair.makeRandom(this.img, 0);
-    u2.x = l2.x = u1.x + PIPES.w * 3.5;
+    u2.x = l2.x = u1.x + gap;
     this.pairs.push([u1, l1], [u2, l2]);
   }
   stop() {
@@ -148,10 +166,10 @@ export class Pipes {
       l.tick();
     }
   }
-  render(ctx) {
+  render(ctx, a = 1) {
     for (const [u, l] of this.pairs) {
-      u.render(ctx);
-      l.render(ctx);
+      u.render(ctx, a);
+      l.render(ctx, a);
     }
     // One flash per hit pipe (upper: bottom rim, lower: top rim).
     for (const [pipe, edge] of this.marked) {
@@ -223,6 +241,8 @@ export class Player {
     this.crashed = false;
     this.crashEntity = null;
     this.setMode("shm");
+    this.py = this.y;
+    this.prot = this.rot;
   }
   get cx() {
     return this.x + this.w / 2;
@@ -315,7 +335,10 @@ export class Player {
     return false;
   }
   tick() {
-    // Advance wing animation, then mode physics (no drawing here).
+    // Snapshot for render interpolation, then mode physics.
+    // (No drawing here.)
+    this.py = this.y;
+    this.prot = this.rot;
     this.frame += 1;
     if (this.frame % 5 === 0) {
       this.imgPos = (this.imgPos + 1) % FLAP_FRAMES.length;
@@ -325,12 +348,14 @@ export class Player {
     else if (this.mode === "normal") this.tickNormal();
     else if (this.mode === "crash") this.tickCrash();
   }
-  render(ctx) {
-
+  render(ctx, a = 1) {
+    // Interpolated position/rotation: smooth on any refresh rate.
+    const y = this.py + (this.y - this.py) * a;
+    const rot = this.prot + (this.rot - this.prot) * a;
     // pygame rotates counter-clockwise; canvas rotates clockwise -> negate
-    const rad = (-this.rot * Math.PI) / 180;
+    const rad = (-rot * Math.PI) / 180;
     ctx.save();
-    ctx.translate(this.cx, this.cy);
+    ctx.translate(this.cx, y + this.h / 2);
     ctx.rotate(rad);
     ctx.drawImage(this.frames[this.imgIdx], -this.w / 2, -this.h / 2, this.w, this.h);
     ctx.restore();

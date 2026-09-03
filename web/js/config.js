@@ -3,17 +3,35 @@
 // Physics run on a fixed 30 Hz timestep (STEP), so these per-tick
 // values behave exactly like the original.
 
-// World size. Height is fixed; width adapts once at boot:
-// portrait phones stay 288 wide, landscape screens (PC) go 16:9.
-// ES-module live bindings keep every importer in sync.
+// World size. Height is fixed at 512; width matches the screen's aspect
+// at boot (clamped), so the game is always true fullscreen with zero
+// distortion and zero letterbox bars. ES-module live bindings keep
+// every importer in sync.
 export const HEIGHT = 512;
-export const PORTRAIT_W = 288;
-export const LANDSCAPE_W = 910; // 512 * 16 / 9
-export let WORLD_W = PORTRAIT_W;
+export let WORLD_W = 288;
 
-export function initWorld(landscape) {
-  WORLD_W = landscape ? LANDSCAPE_W : PORTRAIT_W;
+export function initWorld(worldWidth) {
+  WORLD_W = worldWidth;
 }
+
+// Width for a viewport: always matches the screen aspect exactly
+// (true fullscreen, zero distortion, zero bars), within sanity caps.
+export function worldWidthFor(viewportW, viewportH) {
+  const aspect = viewportW / Math.max(1, viewportH);
+  return Math.min(1100, Math.max(220, Math.round(HEIGHT * aspect)));
+}
+
+// Extra tower spacing on wide screens so pipe density feels the same
+// everywhere (portrait 288 stays exactly as before).
+export function speedFactor() {
+  return Math.sqrt(Math.max(1, WORLD_W / PORTRAIT_MAX));
+}
+
+export function spawnGap() {
+  return PIPES.w * 2.5 * speedFactor();
+}
+
+export const PORTRAIT_MAX = 288;
 export const VIEWPORT_H = HEIGHT * 0.79; // floor line (y = 404.48)
 export const FLOOR_H = HEIGHT - VIEWPORT_H;
 

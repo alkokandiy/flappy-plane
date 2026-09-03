@@ -2,29 +2,36 @@
 // Frameworks (React/Vue/Svelte/...) can `import { Game } from "./js/game.js"`
 // and mount it on their own <canvas> instead of using this file.
 //
-// Orientation: portrait phones get the 288x512 cabinet, landscape
-// screens (PC) get a 16:9 world. Same height and physics either way.
+// The world always matches the screen aspect exactly (true fullscreen,
+// zero distortion, zero bars): portrait phones stay narrow, PCs go wide.
+// Same height and vertical physics everywhere.
 
-import { WORLD_W, HEIGHT, initWorld } from "./config.js";
+import { WORLD_W, HEIGHT, initWorld, worldWidthFor } from "./config.js";
 import { loadAssets } from "./assets.js";
 import { Game } from "./game.js";
 
-function isLandscape() {
-  return window.innerWidth >= window.innerHeight;
+function currentWorldWidth() {
+  return worldWidthFor(window.innerWidth, window.innerHeight);
 }
 
 async function boot() {
-  const landscape = isLandscape();
-  initWorld(landscape);
+  initWorld(currentWorldWidth());
+  const landscape = window.innerWidth >= window.innerHeight;
   const canvas = document.getElementById("game");
   canvas.width = WORLD_W;
   canvas.height = HEIGHT;
   document
     .querySelector(".screen")
     .classList.toggle("landscape", landscape);
-  // World geometry is fixed at boot: rebuild on orientation change.
+  // World geometry is fixed at boot: rebuild when the aspect changes.
+  let lastW = WORLD_W;
+  let reloadTimer = 0;
   window.addEventListener("resize", () => {
-    if (isLandscape() !== landscape) location.reload();
+    clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(() => {
+      if (currentWorldWidth() !== lastW) location.reload();
+      lastW = currentWorldWidth();
+    }, 300);
   });
   try {
     const assets = await loadAssets();
