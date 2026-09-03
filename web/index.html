@@ -17,10 +17,12 @@
     <div id="loading">Loading…</div>
   </main>
   <!--
-    Optional override: point the game at a specific music file
-    (useful on hosts without directory listing):
-    <script>window.FLAPPY_MUSIC_URL = "assets/music/thismusic.ogg";</script>
+    Pinned music track. Local dev auto-discovers any song in
+    assets/music/, but static hosts (Vercel, etc.) have no directory
+    listing, so the known track is set explicitly here. Change this
+    filename when you swap songs.
   -->
+  <script>window.FLAPPY_MUSIC_URL = "assets/music/thismusic.ogg";</script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
