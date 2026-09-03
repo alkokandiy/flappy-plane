@@ -1,0 +1,13 @@
+build/
+__pycache__/
+*.pyc
+*.pyo
+.coverage/
+coverage/
+*.egg-info/
+dist/
+.venv/
+venv/
+.DS_Store
+
+*-pygbag.ogg

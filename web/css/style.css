@@ -1,0 +1,52 @@
+/* Flappy Plane: fullscreen 9:16 stage on any screen, PC or mobile. */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: #1c1c1c;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* No pull-to-refresh / pinch-zoom / double-tap-zoom while playing */
+  touch-action: none;
+}
+
+#game {
+  /* Keep the 288:512 aspect, as large as the screen allows.
+     min() picks width-limit on wide screens, height-limit on tall ones. */
+  width: min(100vw, calc(100dvh * 9 / 16));
+  height: auto;
+  aspect-ratio: 9 / 16;
+  display: none;
+  touch-action: none;
+  image-rendering: auto;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+}
+
+#game.ready {
+  display: block;
+}
+
+#loading {
+  color: #fff;
+  font-size: 18px;
+  letter-spacing: 0.05em;
+}
