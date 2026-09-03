@@ -75,7 +75,7 @@ export class IntroUI {
   showWin(score, best, isNewBest) {
     this.el.classList.remove("gameover", "cause-pipe", "cause-floor", "cause-sky");
     this.el.classList.add("win");
-    this.title.textContent = "YOU WIN!";
+    this.title.textContent = "It was promised 3,000 years ago.";
     this.panel.hidden = false;
     this.finalScore.textContent = String(score);
     this.bestScore.textContent = String(best);

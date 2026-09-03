@@ -157,6 +157,8 @@ body {
 
 .overlay.win .title {
   color: #7dff8a;
+  font-size: 1.15em;
+  line-height: 1.5;
 }
 
 .overlay.win .ready {
