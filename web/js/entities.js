@@ -180,7 +180,7 @@ export class Pipes {
     return [null, null];
   }
 
-  renderMarker(ctx, pipe, edge, w = 110) {
+  renderMarker(ctx, pipe, edge, w = 160) {
     if (!this.hitImg) return;
     const natW = this.hitImg.naturalWidth || this.hitImg.width;
     const natH = this.hitImg.naturalHeight || this.hitImg.height;

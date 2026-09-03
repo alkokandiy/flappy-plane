@@ -37,7 +37,7 @@ class Pipes(Entity):
         self.spots = []
         try:
             img = pygame.image.load("assets/sprites/hit.png").convert_alpha()
-            w = 110
+            w = 160
             h = int(w * img.get_height() / img.get_width())
             self.hit_image = pygame.transform.scale(img, (w, h))
             gimg = pygame.image.load(
