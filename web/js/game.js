@@ -120,7 +120,7 @@ export class Game {
     this.state = "over";
     this.landed = false;
     this.player.setMode("crash");
-    this.music.stop(); // music plays only during gameplay
+    // Music keeps playing through the game-over screen; retry restarts it.
     this.sfx.hit();
     if (this.player.crashEntity === "pipe") this.sfx.die();
     this.pipes.stop();

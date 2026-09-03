@@ -15,7 +15,7 @@ from .entities import (
     WelcomeMessage,
 )
 from .utils import GameConfig, Images, Sounds, Window
-from .utils.music import start_background_music, stop_background_music
+from .utils.music import start_background_music
 
 
 class Flappy:
@@ -126,7 +126,8 @@ class Flappy:
         """crashes the player down and shows gameover image"""
 
         self.player.set_mode(PlayerMode.CRASH)
-        stop_background_music()  # music plays only during gameplay
+        # Music keeps playing through the game-over screen;
+        # starting a new run restarts it.
         self.pipes.stop()
         self.floor.stop()
 
