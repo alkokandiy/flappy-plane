@@ -28,16 +28,23 @@ class Pipes(Entity):
         self.bottom = self.config.window.viewport_height
         self.upper = []
         self.lower = []
-        # Impact flash shown at the gap edges of a crashed/final tower.
+        # Impact flash shown at crash sites. Two sizes: wide bursts for
+        # tower rims, even wider for ground/sky spots.
         self.hit_image = None
+        self.spot_image = None
         self.marked_ids = set()
+        self.spots = []
         try:
             img = pygame.image.load("assets/sprites/hit.png").convert_alpha()
-            w = 64
+            w = 110
             h = int(w * img.get_height() / img.get_width())
             self.hit_image = pygame.transform.scale(img, (w, h))
+            w2 = 140
+            h2 = int(w2 * img.get_height() / img.get_width())
+            self.spot_image = pygame.transform.scale(img, (w2, h2))
         except Exception:
             self.hit_image = None
+            self.spot_image = None
         self.spawn_initial_pipes()
 
     def tick(self) -> None:
@@ -59,6 +66,10 @@ class Pipes(Entity):
             self.marked_ids.add(id(upper))
             self.marked_ids.add(id(lower))
 
+    def mark_spot(self, x: float, y: float) -> None:
+        """Flash one free point (ground line, sky exit) until reset."""
+        self.spots.append((x, y))
+
     def pair_touching(self, player):
         """Return the (upper, lower) pair touching the player, if any."""
         for upper, lower in zip(self.upper, self.lower):
@@ -68,20 +79,26 @@ class Pipes(Entity):
 
     def draw_markers(self) -> None:
         """Draw impact flashes. Call every frame; frozen world keeps them."""
-        if self.hit_image is None:
-            return
-        w, h = self.hit_image.get_size()
-        for pipe, edge in [(p, e) for p, e in zip(self.upper, ["bottom"] * len(self.upper))] + [
-            (p, e) for p, e in zip(self.lower, ["top"] * len(self.lower))
-        ]:
-            if id(pipe) not in self.marked_ids:
-                continue
-            x = pipe.x + (pipe.w - w) / 2
-            if edge == "bottom":  # upper tower: flash at its bottom rim
-                y = pipe.y + pipe.h - h / 2
-            else:  # lower tower: flash at its top rim
-                y = pipe.y - h / 2
-            self.config.screen.blit(self.hit_image, (x, y))
+        if self.hit_image is not None:
+            w, h = self.hit_image.get_size()
+            edges = [(p, "bottom") for p in self.upper] + [
+                (p, "top") for p in self.lower
+            ]
+            for pipe, edge in edges:
+                if id(pipe) not in self.marked_ids:
+                    continue
+                x = pipe.x + (pipe.w - w) / 2
+                if edge == "bottom":  # upper tower: flash at its bottom rim
+                    y = pipe.y + pipe.h - h / 2
+                else:  # lower tower: flash at its top rim
+                    y = pipe.y - h / 2
+                self.config.screen.blit(self.hit_image, (x, y))
+        if self.spot_image is not None:
+            w2, h2 = self.spot_image.get_size()
+            for x, y in self.spots:
+                self.config.screen.blit(
+                    self.spot_image, (x - w2 / 2, y - h2 / 2)
+                )
 
     def can_spawn_pipes(self) -> bool:
         if not self.upper:

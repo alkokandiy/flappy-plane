@@ -3,7 +3,7 @@
 // unified input for mouse (PC), touch (mobile) and keyboard.
 // Rendering is side-effect free: update() owns all simulation.
 
-import { LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
+import { WIDTH, LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
 import { IntroUI } from "./ui.js";
@@ -112,6 +112,8 @@ export class Game {
       this.pipes.tick();
       this.player.tick();
     } else if (this.state === "over") {
+      // Hit-stop: freeze the first 0.2s on the impact frame for punch.
+      if (this.tickCount - this.overTick < 6) return;
       // World is frozen (velocities are 0); only the falling plane moves.
       this.player.tick();
       if (this.player.y + this.player.h >= this.floor.y - 1) {
@@ -183,9 +185,16 @@ export class Game {
 
   onCrash() {
     this.beginOverScreen(this.score, this.player.crashEntity);
-    // Flash the crashed tower (pipe hits only).
+    // Flash the impact: crashed tower rims, ground line, or sky exit.
     if (this.player.crashEntity === "pipe") {
       this.pipes.markPair(this.pipes.pairTouching(this.player.hitbox));
+    } else if (this.player.crashEntity === "floor") {
+      this.pipes.markSpot(this.player.cx, this.floor.y);
+    } else {
+      this.pipes.markSpot(
+        Math.min(Math.max(this.player.cx, 0), WIDTH),
+        this.player.h / 2
+      );
     }
     // Music keeps playing through the game-over screen; retry restarts it.
     if (this.player.crashEntity === "pipe") {
@@ -213,10 +222,23 @@ export class Game {
 
   render() {
     const ctx = this.ctx;
+    // Screen shake right after a crash (render-only, never touches logic).
+    const sinceOver = this.tickCount - (this.overTick || 0);
+    const shaking =
+      this.state === "over" && this.overTick > 0 && sinceOver < 10;
+    ctx.save();
+    if (shaking) {
+      const mag = (10 - sinceOver) * 1.5;
+      ctx.translate(
+        (Math.random() * 2 - 1) * mag,
+        (Math.random() * 2 - 1) * mag
+      );
+    }
     this.background.draw(ctx);
     this.pipes.render(ctx);
     this.floor.render(ctx);
     this.player.render(ctx);
+    ctx.restore();
 
     // Score digits live on the canvas during play; the overlay panel
     // shows the final score on the intro / game-over screens.

@@ -99,10 +99,11 @@ export class Pipes {
     this.img = img;
     this.hitImg = hitImg;
     this.pairs = [];
-    // Pairs carrying an impact flash (crash site or final countdown
-    // tower). Cleared automatically: marks live on this instance and
-    // reset() builds a fresh Pipes.
+    // Impact flashes: marked pairs (pipe rims) + free spots (ground/sky).
+    // Cleared automatically: marks live on this instance and reset()
+    // builds a fresh Pipes.
     this.marked = new Set();
+    this.spots = [];
     this.spawnInitial();
   }
   get upper() {
@@ -146,14 +147,21 @@ export class Pipes {
       u.render(ctx);
       l.render(ctx);
       if (this.marked.has(pair)) {
-        this.renderMarker(ctx, u, "bottom"); // upper tower: flash at bottom
-        this.renderMarker(ctx, l, "top"); // lower tower: flash at top
+        this.renderMarker(ctx, u, "bottom", 110); // upper: big flash, bottom
+        this.renderMarker(ctx, l, "top", 110); // lower: big flash, top
       }
+    }
+    for (const spot of this.spots) {
+      this.renderSpot(ctx, spot.x, spot.y, 140);
     }
   }
 
   markPair(pair) {
     if (pair) this.marked.add(pair);
+  }
+
+  markSpot(x, y) {
+    this.spots.push({ x, y });
   }
 
   pairTouching(box) {
@@ -168,15 +176,22 @@ export class Pipes {
     return null;
   }
 
-  renderMarker(ctx, pipe, edge) {
+  renderMarker(ctx, pipe, edge, w = 110) {
     if (!this.hitImg) return;
     const natW = this.hitImg.naturalWidth || this.hitImg.width;
     const natH = this.hitImg.naturalHeight || this.hitImg.height;
-    const w = 64;
     const h = (w * natH) / natW;
     const x = pipe.x + (pipe.w - w) / 2;
     const y = edge === "bottom" ? pipe.y + pipe.h - h / 2 : pipe.y - h / 2;
     ctx.drawImage(this.hitImg, x, y, w, h);
+  }
+
+  renderSpot(ctx, x, y, w = 140) {
+    if (!this.hitImg) return;
+    const natW = this.hitImg.naturalWidth || this.hitImg.width;
+    const natH = this.hitImg.naturalHeight || this.hitImg.height;
+    const h = (w * natH) / natW;
+    ctx.drawImage(this.hitImg, x - w / 2, y - h / 2, w, h);
   }
 }
 

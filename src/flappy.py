@@ -101,8 +101,15 @@ class Flappy:
 
         while True:
             if self.player.collided(self.pipes, self.floor):
-                upper, lower = self.pipes.pair_touching(self.player)
-                self.pipes.mark_pair(upper, lower)
+                entity = self.player.crash_entity
+                if entity == "pipe":
+                    upper, lower = self.pipes.pair_touching(self.player)
+                    self.pipes.mark_pair(upper, lower)
+                elif entity == "floor":
+                    self.pipes.mark_spot(self.player.cx, self.floor.y)
+                else:  # flew away: flash where it left the top edge
+                    x = min(max(self.player.cx, 0), self.config.window.width)
+                    self.pipes.mark_spot(x, self.player.h / 2)
                 return
 
             for i, pipe in enumerate(self.pipes.upper):
@@ -138,8 +145,8 @@ class Flappy:
         # starting a new run restarts it.
         self.pipes.stop()
         self.floor.stop()
-        # Let the crash moment read first: the lose banner appears
-        # ~1.2s (36 ticks at 30fps) after the impact.
+        # Let the crash moment read first: hit-stop, then the lose
+        # banner ~1.2s (36 ticks at 30fps) after the impact.
         over_ticks = 0
 
         while True:
@@ -154,8 +161,14 @@ class Flappy:
             self.pipes.tick()
             self.pipes.draw_markers()
             self.score.tick()
-            self.player.tick()
             over_ticks += 1
+            if over_ticks < 6:
+                # Hit-stop: freeze on the impact frame for punch.
+                pygame.display.update()
+                await asyncio.sleep(0)
+                self.config.tick()
+                continue
+            self.player.tick()
             if over_ticks >= 36:
                 self.game_over_message.tick()
 
