@@ -42,7 +42,7 @@ export class IntroUI {
   }
 
   showIntro(best) {
-    this.el.classList.remove("gameover", "cause-pipe", "cause-floor", "cause-sky");
+    this.el.classList.remove("gameover", "win", "cause-pipe", "cause-floor", "cause-sky");
     this.title.innerHTML = "FLAPPY<br />PLANE";
     this.panel.hidden = true;
     this.playBtn.textContent = "▶ PLAY";
@@ -51,6 +51,7 @@ export class IntroUI {
   }
 
   showGameOver(score, best, isNewBest, cause = "pipe") {
+    this.el.classList.remove("win");
     this.el.classList.add("gameover");
     this.el.classList.remove("cause-pipe", "cause-floor", "cause-sky");
     const safeCause = CRASH_TITLES[cause] ? cause : "pipe";
@@ -68,6 +69,19 @@ export class IntroUI {
     } else {
       this.stopWinVideo();
     }
+    this.show();
+  }
+
+  showWin(score, best, isNewBest) {
+    this.el.classList.remove("gameover", "cause-pipe", "cause-floor", "cause-sky");
+    this.el.classList.add("win");
+    this.title.textContent = "YOU WIN!";
+    this.panel.hidden = false;
+    this.finalScore.textContent = String(score);
+    this.bestScore.textContent = String(best);
+    this.newBest.hidden = !isNewBest;
+    this.playBtn.textContent = "↻ RETRY";
+    this.playWinVideo();
     this.show();
   }
 

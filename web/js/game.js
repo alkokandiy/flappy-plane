@@ -127,12 +127,16 @@ export class Game {
         this.tickCount - this.overTick >= this.PANEL_DELAY_TICKS
       ) {
         this.panelShown = true;
-        this.ui.showGameOver(
-          this.overScore,
-          this.overBest,
-          this.overIsNew,
-          this.overCause
-        );
+        if (this.overWin) {
+          this.ui.showWin(this.overScore, this.overBest, this.overIsNew);
+        } else {
+          this.ui.showGameOver(
+            this.overScore,
+            this.overBest,
+            this.overIsNew,
+            this.overCause
+          );
+        }
       }
     }
   }
@@ -155,7 +159,7 @@ export class Game {
   }
 
   onCountdownComplete() {
-    // Countdown reached 0: flash the final tower, end on the lose page.
+    // Countdown reached 0: flash the final tower, end on the WIN page.
     this.pipes.markPair(this.lastPassedPair);
     this.beginOverScreen(0, "floor");
     const isNew = START_SCORE > this.best;
@@ -165,6 +169,7 @@ export class Game {
     }
     this.overBest = this.best;
     this.overIsNew = isNew;
+    this.overWin = true;
   }
 
   // Crash/page bookkeeping shared by both endings. The overlay itself
@@ -178,6 +183,7 @@ export class Game {
     this.overBest = this.best;
     this.overIsNew = false;
     this.overCause = cause;
+    this.overWin = false;
     this.player.setMode("crash");
     this.pipes.stop();
     this.floor.stop();

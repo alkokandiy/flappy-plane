@@ -155,6 +155,18 @@ body {
   color: #ffd23e;
 }
 
+.overlay.win .title {
+  color: #7dff8a;
+}
+
+.overlay.win .ready {
+  display: none;
+}
+
+.overlay.win #winVideo {
+  display: block;
+}
+
 .ready {
   font-family: var(--px);
   font-size: 0.95em;

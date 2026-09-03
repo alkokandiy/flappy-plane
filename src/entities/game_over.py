@@ -25,8 +25,20 @@ class GameOver(Entity):
             self.lose_rect.bottom = self.y - 6
         except Exception:
             self.lose_image = None
+        # Green "YOU WIN!" banner for countdown victories.
+        self.win_image = None
+        try:
+            self.win_image = pygame.image.load(
+                "assets/sprites/win.png"
+            ).convert_alpha()
+        except Exception:
+            self.win_image = None
+        self.win = False
 
     def draw(self) -> None:
+        if self.win and self.win_image is not None:
+            self.config.screen.blit(self.win_image, self.rect)
+            return
         if self.lose_image is not None:
             self.config.screen.blit(self.lose_image, self.lose_rect)
         super().draw()

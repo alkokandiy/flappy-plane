@@ -49,6 +49,7 @@ class Flappy:
             self.game_over_message = GameOver(self.config)
             self.pipes = Pipes(self.config)
             self.score = Score(self.config)
+            self.won = False
             await self.splash()
             await self.play()
             await self.game_over()
@@ -114,7 +115,9 @@ class Flappy:
                 if self.player.crossed(pipe):
                     self.score.add()
                     if self.score.score <= 0:
-                        # Countdown finished: flash the final tower.
+                        # Countdown finished: flash the final tower,
+                        # run ends on the WIN screen.
+                        self.won = True
                         if i < len(self.pipes.lower):
                             self.pipes.mark_pair(pipe, self.pipes.lower[i])
                         return
@@ -143,6 +146,7 @@ class Flappy:
         # starting a new run restarts it.
         self.pipes.stop()
         self.floor.stop()
+        self.game_over_message.win = self.won
         # Let the crash moment read first: hit-stop, then the lose
         # banner ~1.2s (36 ticks at 30fps) after the impact.
         over_ticks = 0
