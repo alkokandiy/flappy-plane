@@ -6,7 +6,13 @@
 // zero distortion, zero bars): portrait phones stay narrow, PCs go wide.
 // Same height and vertical physics everywhere.
 
-import { WORLD_W, HEIGHT, initWorld, worldWidthFor } from "./config.js";
+import {
+  WORLD_W,
+  HEIGHT,
+  initWorld,
+  worldWidthFor,
+  renderScale,
+} from "./config.js";
 import { loadAssets } from "./assets.js";
 import { Game } from "./game.js";
 
@@ -18,8 +24,11 @@ async function boot() {
   initWorld(currentWorldWidth());
   const landscape = window.innerWidth >= window.innerHeight;
   const canvas = document.getElementById("game");
-  canvas.width = WORLD_W;
-  canvas.height = HEIGHT;
+  // Backing store in device pixels; the game still draws in world
+  // units (Game scales the context to match).
+  const scale = renderScale();
+  canvas.width = Math.round(WORLD_W * scale);
+  canvas.height = Math.round(HEIGHT * scale);
   document
     .querySelector(".screen")
     .classList.toggle("landscape", landscape);

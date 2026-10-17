@@ -13,6 +13,7 @@ import {
   spawnX,
   spawnGap,
   speedFactor,
+  PACE,
 } from "./config.js";
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -41,7 +42,7 @@ export class Floor {
     this.y = VIEWPORT_H;
     this.x = 0;
     this.px = 0;
-    this.velX = FLOOR.speed * speedFactor();
+    this.velX = FLOOR.speed * speedFactor() * PACE;
     this.tileW = this.w; // ground texture loops every tile
   }
   get rect() {
@@ -70,7 +71,7 @@ export class Pipe {
     this.y = y;
     this.w = PIPES.w;
     this.h = PIPES.h;
-    this.velX = -PIPES.speed * speedFactor();
+    this.velX = -PIPES.speed * speedFactor() * PACE;
     this.flipped = flipped;
   }
   get cx() {
@@ -141,7 +142,7 @@ export class Pipes {
     const f = speedFactor();
     const x1 = legacy
       ? WORLD_W + PIPES.w * 3
-      : WORLD_W * PLAYER.startXFrac + PIPES.speed * f * 50;
+      : WORLD_W * PLAYER.startXFrac + PIPES.speed * f * PACE * 50;
     const gap = legacy ? PIPES.w * 3.5 : spawnGap() + PIPES.w;
     const [u1, l1] = PipePair.makeRandom(this.img, 0);
     u1.x = l1.x = x1;

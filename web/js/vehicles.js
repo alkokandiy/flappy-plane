@@ -12,7 +12,11 @@
 //     mode     "shm" | "normal" | "crash"
 //     frameIdx current sprite frame (sprite-sheet vehicles only)
 
-import { HITBOX_SHRINK_X, HITBOX_SHRINK_Y } from "./config.js";
+import {
+  HITBOX_SHRINK_X,
+  HITBOX_SHRINK_Y,
+  vehicleScale,
+} from "./config.js";
 
 export const VEHICLE_KEY = "flappyplane_vehicle";
 
@@ -64,13 +68,14 @@ export function createVehicle(id, assets) {
 // --- the original plane (3-frame sprite) ----------------------------
 
 function makePlane(frames) {
+  const k = vehicleScale();
   return {
     id: "plane",
-    w: 80,
-    h: 26,
+    w: 80 * k,
+    h: 26 * k,
     rotScale: 1,
-    hitShrinkX: HITBOX_SHRINK_X,
-    hitShrinkY: HITBOX_SHRINK_Y,
+    hitShrinkX: HITBOX_SHRINK_X * k,
+    hitShrinkY: HITBOX_SHRINK_Y * k,
     frameCount: frames.length,
     draw(ctx, s) {
       const img = frames[s.frameIdx % frames.length];
@@ -136,15 +141,16 @@ function poly(ctx, pts, fill, stroke, lw = 0.6) {
 }
 
 function makeCar() {
+  const k = vehicleScale();
   return {
     id: "car",
-    w: CAR_W,
-    h: CAR_H,
+    w: CAR_W * k,
+    h: CAR_H * k,
     // A car noses over far less than a paper plane: keep the physics
     // identical and just damp how much of it shows.
     rotScale: 0.62,
-    hitShrinkX: 11,
-    hitShrinkY: 9,
+    hitShrinkX: 11 * k,
+    hitShrinkY: 9 * k,
     frameCount: 1,
     draw(ctx, s) {
       const k = this.w / CAR_BOX_W;
@@ -208,15 +214,44 @@ function stamp(ctx, tex, x, y, r, a) {
   ctx.drawImage(tex, x - r, y - r, r * 2, r * 2);
 }
 
+// Smoke covers a big area in soft, low-contrast pixels, which makes it
+// by far the most fill-hungry thing on screen — and the cost scales
+// with the square of the render scale, so a 2x phone pays 4x. It is
+// also the one thing that loses nothing by being drawn at lower
+// resolution, so it goes into a small offscreen buffer and gets
+// composited up in a single drawImage. Same look, a fraction of the
+// pixels touched.
+const SMOKE_REGION = { x: -128, y: -2, w: 236, h: 148 };
+const SMOKE_BUF_SCALE = 0.7;
+let SMOKE_BUF = null;
+let SMOKE_CTX = null;
+
+function smokeBuffer() {
+  if (!SMOKE_BUF) {
+    SMOKE_BUF = document.createElement("canvas");
+    SMOKE_BUF.width = Math.ceil(SMOKE_REGION.w * SMOKE_BUF_SCALE);
+    SMOKE_BUF.height = Math.ceil(SMOKE_REGION.h * SMOKE_BUF_SCALE);
+    SMOKE_CTX = SMOKE_BUF.getContext("2d");
+  }
+  return SMOKE_CTX;
+}
+
 // The column each nozzle kicks up: a thin jet that blossoms into a
 // billowing bank far below, plus the wisps that peel off sideways.
 // Everything is a function of (t, thrust), so there is no particle
 // state to keep and the menu previews match the game exactly.
 function drawSmokeBank(ctx, t, thrust) {
+  const R = SMOKE_REGION;
+  const S = SMOKE_BUF_SCALE;
+  const b = smokeBuffer();
+  b.setTransform(1, 0, 0, 1, 0, 0);
+  b.clearRect(0, 0, SMOKE_BUF.width, SMOKE_BUF.height);
+  // World units -> buffer pixels, so every stamp below keeps using
+  // the same coordinates the rest of the car is drawn in.
+  b.setTransform(S, 0, 0, S, -R.x * S, -R.y * S);
+
   // Puff count follows the throttle: a flap gets the full billowing
-  // mass, the idle burn between flaps gets a thin trail. Smoke is by
-  // far the most fill-heavy thing drawn, and idle is where the run is
-  // mostly spent, so this is what keeps the frame rate up on phones.
+  // mass, the idle burn between flaps gets a thin trail.
   const N = 4 + Math.round(thrust * 12);
   for (const [i, n] of NOZZLES.entries()) {
     // One continuous column per nozzle: it leaves the nozzle thin and
@@ -226,7 +261,7 @@ function drawSmokeBank(ctx, t, thrust) {
       const p = (t * 0.02 + i * 0.17 + j / N) % 1;
       const spread = (((i * 3 + j * 5) % 7) / 7 - 0.5) * 2;
       stamp(
-        ctx,
+        b,
         puffTexture(i + j),
         n.x - p * 6 + spread * p * p * 24,
         n.y + 3 + p * 88,
@@ -239,7 +274,7 @@ function drawSmokeBank(ctx, t, thrust) {
     for (let j = 0; thrust > 0.45 && j < 3; j++) {
       const p = (t * 0.04 + i * 0.29 + j / 3) % 1;
       stamp(
-        ctx,
+        b,
         puffTexture(i + j + 1),
         n.x - 12 - p * 40,
         n.y + 42 + p * 30 - Math.sin(p * 3.1) * 6,
@@ -248,7 +283,9 @@ function drawSmokeBank(ctx, t, thrust) {
       );
     }
   }
+  b.globalAlpha = 1;
   ctx.globalAlpha = 1;
+  ctx.drawImage(SMOKE_BUF, R.x, R.y, R.w, R.h);
 }
 
 // Rocket plumes + the smoke column they kick up.

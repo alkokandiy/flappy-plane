@@ -31,6 +31,26 @@ export function spawnGap() {
   return PIPES.w * 2.5 * speedFactor();
 }
 
+// Render scale: the backing store is this many device pixels per world
+// unit. Without it a phone draws a 236x512 canvas and the browser
+// upscales it ~3x to the screen, which is what makes everything look
+// soft and chunky. Capped at 2 because fill rate, not sharpness, is
+// what runs out first on a phone.
+export function renderScale() {
+  return Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+}
+
+// Vehicles are drawn at a fixed world size, so on a narrow world they
+// eat far more of the screen than they do on a wide one: the car is
+// 10% of a laptop's width but 39% of a phone's. This shrinks them on
+// narrow screens so the phone framing is closer to the laptop's.
+export function vehicleScale() {
+  return Math.min(1, Math.max(0.68, WORLD_W / 400));
+}
+
+// Global pace multiplier for the towers and the ground.
+export const PACE = 1.18;
+
 export const PORTRAIT_MAX = 288;
 export const VIEWPORT_H = HEIGHT * 0.79; // floor line (y = 404.48)
 export const FLOOR_H = HEIGHT - VIEWPORT_H;

@@ -3,7 +3,7 @@
 // unified input for mouse (PC), touch (mobile) and keyboard.
 // Rendering is side-effect free: update() owns all simulation.
 
-import { LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
+import { LAYOUT, STEP, BEST_KEY, START_SCORE, WORLD_W } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
 import { IntroUI, GarageUI } from "./ui.js";
@@ -270,6 +270,10 @@ export class Game {
 
   render(alpha = 1) {
     const ctx = this.ctx;
+    // The backing store is in device pixels; everything below draws in
+    // world units, so re-establish the scale every frame.
+    const s = this.canvas.width / WORLD_W;
+    ctx.setTransform(s, 0, 0, s, 0, 0);
     // Screen shake right after a crash (render-only, never touches logic).
     const sinceOver = this.tickCount - (this.overTick || 0);
     const shaking =
