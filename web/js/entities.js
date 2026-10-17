@@ -226,11 +226,18 @@ export class Pipes {
 
 const FLAP_FRAMES = [0, 1, 2, 1];
 
+// Idle burn keeps the hover jets alive between flaps; 0.72 lands the
+// flap spike back at idle in roughly half a second at 30Hz.
+const IDLE_THRUST = 0.22;
+const THRUST_DECAY = 0.72;
+
 export class Player {
-  constructor(frames) {
-    this.frames = frames; // [up, mid, down] plane images
-    this.w = PLAYER.w;
-    this.h = PLAYER.h;
+  constructor(vehicle) {
+    // The vehicle owns the look (size, hitbox, how it draws itself);
+    // every number below this line is the same whatever you picked.
+    this.vehicle = vehicle;
+    this.w = vehicle.w;
+    this.h = vehicle.h;
     this.x = Math.floor(WORLD_W * PLAYER.startXFrac);
     this.y = Math.floor((HEIGHT - this.h) / 2);
     this.minY = -2 * this.h;
@@ -238,6 +245,9 @@ export class Player {
     this.frame = 0;
     this.imgIdx = 0;
     this.imgPos = 0;
+    // Engine power: spikes to 1 on every flap, then falls back to the
+    // idle burn. Drives the thrusters; harmless for sprite vehicles.
+    this.thrust = IDLE_THRUST;
     this.crashed = false;
     this.crashEntity = null;
     this.setMode("shm");
@@ -250,13 +260,19 @@ export class Player {
   get cy() {
     return this.y + this.h / 2;
   }
+  get shrinkX() {
+    return this.vehicle.hitShrinkX ?? HITBOX_SHRINK_X;
+  }
+  get shrinkY() {
+    return this.vehicle.hitShrinkY ?? HITBOX_SHRINK_Y;
+  }
   // Forgiving hitbox (slightly smaller than the sprite)
   get hitbox() {
     return {
-      x: this.x + HITBOX_SHRINK_X,
-      y: this.y + HITBOX_SHRINK_Y,
-      w: this.w - HITBOX_SHRINK_X * 2,
-      h: this.h - HITBOX_SHRINK_Y * 2,
+      x: this.x + this.shrinkX,
+      y: this.y + this.shrinkY,
+      w: this.w - this.shrinkX * 2,
+      h: this.h - this.shrinkY * 2,
     };
   }
   setMode(mode) {
@@ -285,6 +301,7 @@ export class Player {
       this.velY = this.flapAcc;
       this.flapped = true;
       this.rot = 80;
+      this.thrust = 1;
       if (sfx) sfx.wing();
     }
   }
@@ -344,6 +361,9 @@ export class Player {
       this.imgPos = (this.imgPos + 1) % FLAP_FRAMES.length;
       this.imgIdx = FLAP_FRAMES[this.imgPos];
     }
+    // Engines cut out on impact; otherwise power eases back to idle.
+    const floorThrust = this.mode === "crash" ? 0 : IDLE_THRUST;
+    this.thrust = floorThrust + (this.thrust - floorThrust) * THRUST_DECAY;
     if (this.mode === "shm") this.tickShm();
     else if (this.mode === "normal") this.tickNormal();
     else if (this.mode === "crash") this.tickCrash();
@@ -353,11 +373,16 @@ export class Player {
     const y = this.py + (this.y - this.py) * a;
     const rot = this.prot + (this.rot - this.prot) * a;
     // pygame rotates counter-clockwise; canvas rotates clockwise -> negate
-    const rad = (-rot * Math.PI) / 180;
+    const rad = (-rot * (this.vehicle.rotScale ?? 1) * Math.PI) / 180;
     ctx.save();
     ctx.translate(this.cx, y + this.h / 2);
     ctx.rotate(rad);
-    ctx.drawImage(this.frames[this.imgIdx], -this.w / 2, -this.h / 2, this.w, this.h);
+    this.vehicle.draw(ctx, {
+      t: this.frame + a, // continuous: thrusters flicker at screen rate
+      thrust: this.thrust,
+      mode: this.mode,
+      frameIdx: this.imgIdx,
+    });
     ctx.restore();
   }
 }

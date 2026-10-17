@@ -263,6 +263,149 @@ body {
   text-shadow: 0.15em 0.15em 0 rgba(0, 0, 0, 0.8);
 }
 
+/* ---------- vehicle select (garage) ---------- */
+
+#garage {
+  gap: 1.1em;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(10, 12, 18, 0.88) 0%,
+    rgba(0, 0, 0, 0.95) 100%
+  );
+}
+
+.garage-title {
+  font-family: var(--px);
+  font-size: 1.1em;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: #ffe878;
+  text-shadow: 0.12em 0.12em 0 #000;
+}
+
+.garage-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9em;
+  pointer-events: auto;
+}
+
+/* Each card is a button so keyboard and screen readers get it free. */
+.vcard {
+  font-family: var(--px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5em;
+  width: 11em;
+  padding: 0.8em 0.6em;
+  cursor: pointer;
+  color: #bfc4cc;
+  background: #141414;
+  border: 0.2em solid #000;
+  border-radius: 0.3em;
+  box-shadow: 0 0 0 0.15em #4a4a4a, 0.35em 0.35em 0 rgba(0, 0, 0, 0.55);
+}
+
+.vcard:hover {
+  box-shadow: 0 0 0 0.15em #8a8a8a, 0.35em 0.35em 0 rgba(0, 0, 0, 0.55);
+}
+
+.vcard.selected {
+  color: #fff;
+  background: #1d2430;
+  box-shadow: 0 0 0 0.15em #ffe878, 0.35em 0.35em 0 rgba(0, 0, 0, 0.55);
+}
+
+/* Live preview: the same draw() the game uses, animated. */
+.vcard canvas {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  background: linear-gradient(180deg, #16202e 0%, #0b0e14 100%);
+  border-radius: 0.2em;
+}
+
+.vcard .vname {
+  font-size: 0.62em;
+  letter-spacing: 0.08em;
+}
+
+.vcard .vtag {
+  font-size: 0.42em;
+  letter-spacing: 0.1em;
+  color: #7f8894;
+}
+
+.vcard.selected .vtag {
+  color: #ffe878;
+}
+
+#garageBack,
+#garageBtn {
+  pointer-events: auto;
+  font-family: var(--px);
+  cursor: pointer;
+}
+
+/* Secondary action under PLAY: same cabinet look, no gold. */
+#garageBtn.ghost {
+  font-size: 0.68em;
+  letter-spacing: 0.12em;
+  text-indent: 0.12em;
+  color: #d6d6d6;
+  background: #1a1a1a;
+  border: 0.18em solid #000;
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.3em 0 #000;
+  border-radius: 0.4em;
+  padding: 0.75em 1.3em;
+}
+
+#garageBtn.ghost:hover {
+  filter: brightness(1.25);
+}
+
+#garageBtn.ghost:active {
+  transform: translateY(0.25em);
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.05em 0 #000;
+}
+
+/* The garage is reachable from the title screen only. */
+.overlay.gameover #garageBtn,
+.overlay.win #garageBtn {
+  display: none;
+}
+
+#garageBack {
+  font-size: 0.8em;
+  color: #2b1a00;
+  background: linear-gradient(180deg, #ffe878 0%, #f5a623 100%);
+  border: 0.18em solid #000;
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.3em 0 #000;
+  border-radius: 0.4em;
+  padding: 0.8em 1.5em;
+}
+
+#garageBack:active {
+  transform: translateY(0.25em);
+  box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.05em 0 #000;
+}
+
+.screen.landscape .vcard {
+  width: 12.5em;
+}
+
+.screen.landscape .garage-title {
+  font-size: 0.9em;
+}
+
+.screen.landscape #garage {
+  gap: 0.7em;
+}
+
+/* end garage */
+
 /* end overlay */
 
 /* Compact overlay for short landscape (laptop) screens: everything

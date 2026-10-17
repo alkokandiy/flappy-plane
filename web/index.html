@@ -15,7 +15,7 @@
     href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
     rel="stylesheet"
   />
-  <link rel="stylesheet" href="css/style.css?v=10" />
+  <link rel="stylesheet" href="css/style.css?v=11" />
 </head>
 <body>
   <main id="stage">
@@ -41,7 +41,14 @@
           <div id="newBest" class="newbest" hidden>★ NEW BEST ★</div>
         </div>
         <button id="playBtn" type="button">▶ PLAY</button>
+        <button id="garageBtn" type="button" class="ghost">⚙ VEHICLES</button>
         <div class="hint">CLICK / SPACE</div>
+      </div>
+      <div id="garage" class="overlay" hidden>
+        <div class="scan"></div>
+        <h2 class="garage-title">SELECT VEHICLE</h2>
+        <div id="garageList" class="garage-list"></div>
+        <button id="garageBack" type="button">◀ BACK</button>
       </div>
     </div>
     <div id="loading">Loading…</div>
@@ -56,6 +63,6 @@
   <!-- Bump ?v= after each release so browsers/Vercel drop cached files.
        (A stale cached game.js is the classic "it feels like the old
        version" bug.) -->
-  <script type="module" src="js/main.js?v=10"></script>
+  <script type="module" src="js/main.js?v=11"></script>
 </body>
 </html>

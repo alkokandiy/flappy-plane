@@ -6,7 +6,13 @@
 import { LAYOUT, STEP, BEST_KEY, START_SCORE } from "./config.js";
 import { Background, Floor, Pipes, Player, drawScore } from "./entities.js";
 import { SoundFX, Music } from "./audio.js";
-import { IntroUI } from "./ui.js";
+import { IntroUI, GarageUI } from "./ui.js";
+import {
+  createVehicle,
+  loadSelected,
+  saveSelected,
+  vehicleMeta,
+} from "./vehicles.js";
 
 export class Game {
   constructor(canvas, assets) {
@@ -17,6 +23,13 @@ export class Game {
     this.music = new Music();
     this.best = Number(localStorage.getItem(BEST_KEY) || 0);
     this.ui = new IntroUI(() => this.pressPlay());
+    this.vehicleId = loadSelected();
+    this.garage = new GarageUI(
+      (id) => createVehicle(id, this.assets),
+      (id) => this.chooseVehicle(id)
+    );
+    this.ui.onGarage(() => this.openGarage());
+    this.ui.setVehicleTitle(vehicleMeta(this.vehicleId).title);
     this.tickCount = 0;
     // Crash-page delay (1.2s at 30Hz): show the impact first, then the page.
     this.PANEL_DELAY_TICKS = 36;
@@ -28,7 +41,7 @@ export class Game {
   reset() {
     this.background = new Background(this.assets.backgrounds);
     this.floor = new Floor(this.assets.base);
-    this.player = new Player(this.assets.plane);
+    this.player = new Player(createVehicle(this.vehicleId, this.assets));
     this.pipes = new Pipes(this.assets.pipe, this.assets.hit, this.assets.groundHit);
     this.score = START_SCORE;
     this.lastPassedPair = null;
@@ -58,6 +71,23 @@ export class Game {
     this.music.findTrack();
   }
 
+  // --- garage ---
+
+  openGarage() {
+    this.ui.hide();
+    this.garage.open(this.vehicleId, () => this.ui.showIntro(this.best));
+  }
+
+  // Picking a vehicle rebuilds the run, so the new one is already on
+  // screen behind the menu when you go back.
+  chooseVehicle(id) {
+    if (id === this.vehicleId) return;
+    this.vehicleId = id;
+    saveSelected(id);
+    this.ui.setVehicleTitle(vehicleMeta(id).title);
+    this.reset();
+  }
+
   pressPlay() {
     // PLAY / RETRY button: same path as tapping the screen.
     this.sfx.unlock();
@@ -65,6 +95,7 @@ export class Game {
   }
 
   onTap() {
+    if (this.garage.isOpen) return;
     if (this.state === "splash") {
       this.startPlay();
     } else if (this.state === "play") {

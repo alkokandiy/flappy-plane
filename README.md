@@ -7,6 +7,13 @@ Play in the browser (no build step, works on PC and mobile):
 2. `python3 -m http.server 8000`
 3. Open http://localhost:8000 — click / tap / Space to flap.
 
+VEHICLES on the title screen picks what you fly: the classic paper jet,
+or the SKYWEDGE, a hovering wedge supercar that rides four rocket
+thrusters (same physics, they just flare on every tap). The choice is
+remembered between sessions. Vehicles live in `web/js/vehicles.js` —
+each one is a size, a hitbox and a `draw()`, so adding another means
+adding one entry there and nothing else.
+
 Put background music in `web/assets/music/` (`.ogg` works everywhere;
 `.m4a` does not — convert it: `ffmpeg -i song.m4a -c:a libvorbis song.ogg`).
 
