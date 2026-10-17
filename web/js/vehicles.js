@@ -164,7 +164,91 @@ function drawCar(ctx, s) {
   drawExhaust(ctx, t, thrust, dead);
   drawWheels(ctx, t, dead);
   drawWing(ctx);
-  drawBody(ctx, t, dead);
+  drawBody(ctx);
+}
+
+// A soft puff, drawn once into an offscreen canvas and then stamped
+// hundreds of times a second. Building it out of overlapping lobes
+// gives the cauliflower edge a single radial gradient cannot, and
+// caching it keeps the whole smoke bank to one drawImage per puff.
+let PUFF_CACHE = null;
+
+function puffTexture(i) {
+  if (!PUFF_CACHE) {
+    PUFF_CACHE = [0, 1, 2].map((seed) => {
+      const S = 128;
+      const c = document.createElement("canvas");
+      c.width = S;
+      c.height = S;
+      const g = c.getContext("2d");
+      for (let k = 0; k < 7; k++) {
+        const ang = (k / 7) * Math.PI * 2 + seed * 1.9;
+        const d = S * (0.1 + 0.09 * (((k * 7 + seed * 3) % 5) / 5));
+        const x = S / 2 + Math.cos(ang) * d;
+        const y = S / 2 + Math.sin(ang) * d;
+        const r = S * (0.2 + 0.09 * (((k * 3 + seed) % 4) / 4));
+        const rg = g.createRadialGradient(x, y, 0, x, y, r);
+        rg.addColorStop(0, "rgba(255,255,255,0.46)");
+        rg.addColorStop(0.5, "rgba(250,252,255,0.2)");
+        rg.addColorStop(1, "rgba(245,249,255,0)");
+        g.fillStyle = rg;
+        g.beginPath();
+        g.arc(x, y, r, 0, 7);
+        g.fill();
+      }
+      return c;
+    });
+  }
+  return PUFF_CACHE[i % PUFF_CACHE.length];
+}
+
+function stamp(ctx, tex, x, y, r, a) {
+  if (a <= 0.02) return;
+  ctx.globalAlpha = a;
+  ctx.drawImage(tex, x - r, y - r, r * 2, r * 2);
+}
+
+// The column each nozzle kicks up: a thin jet that blossoms into a
+// billowing bank far below, plus the wisps that peel off sideways.
+// Everything is a function of (t, thrust), so there is no particle
+// state to keep and the menu previews match the game exactly.
+function drawSmokeBank(ctx, t, thrust) {
+  // Puff count follows the throttle: a flap gets the full billowing
+  // mass, the idle burn between flaps gets a thin trail. Smoke is by
+  // far the most fill-heavy thing drawn, and idle is where the run is
+  // mostly spent, so this is what keeps the frame rate up on phones.
+  const N = 4 + Math.round(thrust * 12);
+  for (const [i, n] of NOZZLES.entries()) {
+    // One continuous column per nozzle: it leaves the nozzle thin and
+    // bright, then billows out as it falls away. Opaque almost at
+    // once, so it reads as exhaust rather than haze floating nearby.
+    for (let j = 0; j < N; j++) {
+      const p = (t * 0.02 + i * 0.17 + j / N) % 1;
+      const spread = (((i * 3 + j * 5) % 7) / 7 - 0.5) * 2;
+      stamp(
+        ctx,
+        puffTexture(i + j),
+        n.x - p * 6 + spread * p * p * 24,
+        n.y + 3 + p * 88,
+        3.5 + p * 28,
+        thrust * 0.52 * Math.min(1, p * 7) * (1 - p) ** 0.55
+      );
+    }
+    // Wisps peeling sideways once the column has spread out. Only
+    // worth drawing when the engines are actually working.
+    for (let j = 0; thrust > 0.45 && j < 3; j++) {
+      const p = (t * 0.04 + i * 0.29 + j / 3) % 1;
+      stamp(
+        ctx,
+        puffTexture(i + j + 1),
+        n.x - 12 - p * 40,
+        n.y + 42 + p * 30 - Math.sin(p * 3.1) * 6,
+        8 + p * 16,
+        thrust * 0.24 * Math.sin(Math.PI * p)
+      );
+    }
+  }
+  ctx.globalAlpha = 1;
 }
 
 // Rocket plumes + the smoke column they kick up.
@@ -188,33 +272,15 @@ function drawExhaust(ctx, t, thrust, dead) {
   if (thrust <= 0.01) return;
 
   ctx.save();
-  // Smoke first, so the flame burns through it. Soft-edged (radial
-  // gradient, not a flat disc) or it reads as bubbles at game scale.
-  for (const [i, n] of NOZZLES.entries()) {
-    for (let j = 0; j < 3; j++) {
-      const p = (t * 0.045 + i * 0.13 + j * 0.333) % 1;
-      const a = (1 - p) * 0.22 * thrust;
-      if (a <= 0.01) continue;
-      const r = 3 + p * 13;
-      const sx = n.x - p * 9;
-      const sy = n.y + 16 + p * 32;
-      const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, r);
-      sg.addColorStop(0, `rgba(214,224,236,${a})`);
-      sg.addColorStop(0.6, `rgba(190,203,219,${a * 0.5})`);
-      sg.addColorStop(1, "rgba(180,194,212,0)");
-      ctx.fillStyle = sg;
-      ctx.beginPath();
-      ctx.arc(sx, sy, r, 0, 7);
-      ctx.fill();
-    }
-  }
+  // Smoke first, so the flames burn through it.
+  drawSmokeBank(ctx, t, thrust);
 
   // Flames burn additively so they glow over both day and night skies.
   ctx.globalCompositeOperation = "lighter";
   for (const [i, n] of NOZZLES.entries()) {
     const f = flicker(t, i);
-    const len = (8 + 42 * thrust) * f;
-    const wid = n.r * (1.15 + 0.55 * thrust);
+    const len = (5 + 15 * thrust) * f;
+    const wid = n.r * (0.95 + 0.4 * thrust);
     // The car is moving forward, so the column rakes back as it falls.
     const drift = -len * 0.13;
 
@@ -382,16 +448,7 @@ function drawWing(ctx) {
   poly(ctx, [[-55.4, -17.3], [-51.8, -17.4], [-51.2, -12.6], [-54.8, -12.5]], "#c9ced6");
 }
 
-function drawBody(ctx, t, dead) {
-  // Contact shadow so the car doesn't sit flat against the sky.
-  ctx.save();
-  ctx.globalAlpha = dead ? 0.1 : 0.18;
-  ctx.fillStyle = "#000";
-  ctx.beginPath();
-  ctx.ellipse(-3, 19, 43, 4.5, 0, 0, 7);
-  ctx.fill();
-  ctx.restore();
-
+function drawBody(ctx) {
   // 1. Top deck — the sliver of upper surface a 3/4 view shows.
   poly(ctx, [...OUTLINE.slice(0, 9), ...rev(SHOULDER)], TOP_FACET);
   // 2. Flank — the big body side.
