@@ -24,7 +24,7 @@ export const VEHICLE_KEY = "flappyplane_vehicle";
 export const VEHICLES = [
   {
     id: "plane",
-    name: "BOEING 767",
+    name: "BEOING 767",
     tagline: "THE CLASSIC",
     title: "FLAPPY<br />PLANE",
   },

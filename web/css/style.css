@@ -421,8 +421,15 @@ body {
 
 /* ---------- profile links ---------- */
 
+/* Pinned to the bottom edge rather than sitting in the stack, so they
+   never compete with the title or crowd the buttons. */
 .socials {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(1em + env(safe-area-inset-bottom, 0px));
   display: flex;
+  justify-content: center;
   gap: 0.8em;
   pointer-events: auto;
 }
@@ -468,6 +475,59 @@ body {
 }
 
 /* end profile links */
+
+/* ---------- portrait phones ---------- */
+/* The vehicle flies across the middle of the screen, so on a phone the
+   title sits high, the buttons sit low, and the band between them is
+   left empty. Landscape has the width to stay centred. */
+
+.screen:not(.landscape) {
+  font-size: min(calc(100vw / 27), 18px);
+}
+
+.screen:not(.landscape) .overlay {
+  justify-content: flex-start;
+  padding: 7% 1em calc(4.6em + env(safe-area-inset-bottom, 0px));
+  gap: 0.75em;
+}
+
+/* Everything from PLAY down is pushed to the bottom of the screen. */
+.screen:not(.landscape) #playBtn {
+  margin-top: auto;
+}
+
+.screen:not(.landscape) .title {
+  font-size: 2.15em;
+}
+
+.screen:not(.landscape) .overlay.win .title {
+  font-size: 1em;
+}
+
+.screen:not(.landscape) .badge {
+  font-size: 0.55em;
+}
+
+.screen:not(.landscape) .ready {
+  font-size: 0.8em;
+}
+
+.screen:not(.landscape) #playBtn {
+  font-size: 1em;
+  padding: 0.8em 1.6em;
+}
+
+.screen:not(.landscape) #garageBtn.ghost,
+.screen:not(.landscape) #menuBtn.ghost {
+  font-size: 0.6em;
+}
+
+.screen:not(.landscape) .hint {
+  font-size: 0.55em;
+}
+
+/* end portrait phones */
+
 
 
 /* end overlay */
