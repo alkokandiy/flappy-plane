@@ -328,8 +328,10 @@ body {
 }
 
 .vcard .vname {
-  font-size: 0.62em;
-  letter-spacing: 0.08em;
+  font-size: 0.55em;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-align: center;
 }
 
 .vcard .vtag {
@@ -343,14 +345,16 @@ body {
 }
 
 #garageBack,
-#garageBtn {
+#garageBtn,
+#menuBtn {
   pointer-events: auto;
   font-family: var(--px);
   cursor: pointer;
 }
 
 /* Secondary action under PLAY: same cabinet look, no gold. */
-#garageBtn.ghost {
+#garageBtn.ghost,
+#menuBtn.ghost {
   font-size: 0.68em;
   letter-spacing: 0.12em;
   text-indent: 0.12em;
@@ -362,18 +366,27 @@ body {
   padding: 0.75em 1.3em;
 }
 
-#garageBtn.ghost:hover {
+#garageBtn.ghost:hover,
+#menuBtn.ghost:hover {
   filter: brightness(1.25);
 }
 
-#garageBtn.ghost:active {
+#garageBtn.ghost:active,
+#menuBtn.ghost:active {
   transform: translateY(0.25em);
   box-shadow: 0 0 0 0.12em #8a8a8a, 0 0.05em 0 #000;
 }
 
-/* The garage is reachable from the title screen only. */
-.overlay.gameover #garageBtn,
-.overlay.win #garageBtn {
+/* Both secondary buttons sit in one row under PLAY. VEHICLES is
+   reachable from every screen; MENU only makes sense once a run has
+   ended, since the title screen IS the menu. */
+.actions {
+  display: flex;
+  gap: 0.6em;
+  pointer-events: auto;
+}
+
+.overlay:not(.gameover):not(.win) #menuBtn {
   display: none;
 }
 
@@ -405,6 +418,57 @@ body {
 }
 
 /* end garage */
+
+/* ---------- profile links ---------- */
+
+.socials {
+  display: flex;
+  gap: 0.8em;
+  pointer-events: auto;
+}
+
+.socials a {
+  display: grid;
+  place-items: center;
+  width: 2.1em;
+  height: 2.1em;
+  color: #d6d6d6;
+  background: #1a1a1a;
+  border: 0.15em solid #000;
+  border-radius: 0.3em;
+  box-shadow: 0 0 0 0.1em #8a8a8a, 0 0.22em 0 #000;
+}
+
+.socials a:hover {
+  color: #ffe878;
+  box-shadow: 0 0 0 0.1em #ffe878, 0 0.22em 0 #000;
+}
+
+.socials a:active {
+  transform: translateY(0.18em);
+  box-shadow: 0 0 0 0.1em #8a8a8a, 0 0.04em 0 #000;
+}
+
+.socials svg {
+  width: 1.1em;
+  height: 1.1em;
+  fill: currentColor;
+  display: block;
+}
+
+/* Title screen only: the crash and win pages are busy enough. */
+.overlay.gameover .socials,
+.overlay.win .socials {
+  display: none;
+}
+
+.screen.landscape .socials a {
+  width: 1.8em;
+  height: 1.8em;
+}
+
+/* end profile links */
+
 
 /* end overlay */
 

@@ -20,15 +20,15 @@ export const VEHICLE_KEY = "flappyplane_vehicle";
 export const VEHICLES = [
   {
     id: "plane",
-    name: "PAPER JET",
+    name: "BOEING 767",
     tagline: "THE CLASSIC",
     title: "FLAPPY<br />PLANE",
   },
   {
     id: "car",
-    name: "SKYWEDGE",
+    name: "TELSA ROADSTART",
     tagline: "4x ROCKET HOVER",
-    title: "FLAPPY<br />WEDGE",
+    title: "FLAPPY<br />ROADSTART",
   },
 ];
 
@@ -88,15 +88,24 @@ function makePlane(frames) {
 
 const CAR_W = 92;
 const CAR_H = 38;
+
+// Pearl white over silver, read off the photos. The three paint facets
+// are flat fills, not a gradient: that is what sells the hard creases.
+const TOP_FACET = "#f8f9fb";
+const FLANK_FACET = "#dee2e8";
+const LOWER_FACET = "#b2b8c2";
+const SKIRT = "#15171c";
+const TRIM_DARK = "#23272e";
+const GLASS = "#0a0d13";
 const CAR_BOX_W = 100; // design-space width the path below is drawn in
 
 // Nozzle positions along the floor pan, front to back. They sit in the
 // gaps between the wheels so no plume ever fires through a tyre.
 const NOZZLES = [
-  { x: 38, y: 10.4, r: 2.3 },
-  { x: 12, y: 10.9, r: 3.0 },
-  { x: -5, y: 11, r: 3.0 },
-  { x: -41, y: 9.4, r: 2.3 },
+  { x: 37, y: 10.4, r: 2.2 },
+  { x: 10, y: 10, r: 3.0 },
+  { x: -6, y: 9.9, r: 3.0 },
+  { x: -41, y: 9, r: 2.2 },
 ];
 
 // Deterministic per-nozzle flicker: no particle state, so the preview
@@ -265,228 +274,213 @@ function drawExhaust(ctx, t, thrust, dead) {
   ctx.restore();
 }
 
+// --- the shell -------------------------------------------------------
+//
+// Read off the reference photos. The car is a hard-edged wedge, so the
+// volume is carried by flat facets meeting at creases, never gradients:
+// a bright top deck, a mid-silver flank, a darker lower panel, and a
+// black rocker under all three. Those four bands are what make a flat
+// drawing read as a solid body seen from three-quarters.
+//
+// OUTLINE is the silhouette, nose (+x) to tail (-x). SHOULDER and HIP
+// are the two creases; every facet is built from slices of these three
+// lists, so the panels can never drift apart when a point is nudged.
+
+const OUTLINE = [
+  [48.4, 3.4], // nose tip, barely above the splitter
+  [38, -0.6],
+  [22, -4.6],
+  [15, -5.6], // windscreen base
+  [2, -12.6], // roof front
+  [-12, -13.3], // roof rear
+  [-34, -8.6], // fastback
+  [-47, -7.1], // rear deck
+  [-50, -1.2], // tail
+  [-46, 9],
+  [40, 10.5],
+];
+
+// Crease between the top deck and the flank.
+const SHOULDER = [
+  [48.4, 3.4],
+  [35, 1.4],
+  [16, -2.4],
+  [-10, -4.6],
+  [-34, -5.4],
+  [-48, -5],
+];
+
+// Crease between the flank and the darker lower panel.
+const HIP = [
+  [46.4, 4.6],
+  [30, 2.5],
+  [0, 1.7],
+  [-30, 1.5],
+  [-48, -1.3],
+];
+
+// Top of the black rocker. It climbs at the tail, where the photos show
+// the whole lower rear going dark into the diffuser.
+const ROCKER = [
+  [45.4, 6.2],
+  [30, 4.2],
+  [0, 3.4],
+  [-30, 3],
+  [-47, 0.2],
+];
+
+const rev = (pts) => [...pts].reverse();
+
 function drawWheels(ctx, t, dead) {
-  // Wheels hang below the floor pan while hovering, like the renders.
-  const spin = dead ? 0 : t * 0.22;
-  for (const cx of [25, -28]) {
-    const cy = 11.5;
-    const r = 8.6;
-    // Tyre
-    ctx.fillStyle = "#0d0f13";
+  // Big dark five-spokes that fill the arches, as in the photos.
+  const spin = dead ? 0 : t * 0.2;
+  for (const cx of [24, -27]) {
+    const cy = 9.2;
+    const r = 9.2;
+    ctx.fillStyle = "#0b0d11";
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, 7);
     ctx.fill();
-    // Rim dish
-    ctx.fillStyle = "#23272e";
+    ctx.fillStyle = "#1c2027";
     ctx.beginPath();
-    ctx.arc(cx, cy, r * 0.74, 0, 7);
+    ctx.arc(cx, cy, r * 0.73, 0, 7);
     ctx.fill();
-    // Five spokes
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(spin);
-    ctx.fillStyle = "#878d98";
+    ctx.fillStyle = "#6f7680";
     for (let i = 0; i < 5; i++) {
       ctx.rotate((Math.PI * 2) / 5);
       ctx.beginPath();
-      ctx.moveTo(-1.5, 0);
-      ctx.lineTo(1.5, 0);
-      ctx.lineTo(0.9, -r * 0.68);
-      ctx.lineTo(-0.9, -r * 0.68);
+      ctx.moveTo(-2, 0);
+      ctx.lineTo(2, 0);
+      ctx.lineTo(1.1, -r * 0.66);
+      ctx.lineTo(-1.1, -r * 0.66);
       ctx.closePath();
       ctx.fill();
     }
     ctx.restore();
-    ctx.fillStyle = "#b9bfc9";
+    ctx.fillStyle = "#aeb5bf";
     ctx.beginPath();
-    ctx.arc(cx, cy, 1.9, 0, 7);
+    ctx.arc(cx, cy, 2, 0, 7);
     ctx.fill();
   }
 }
 
+// Long flat blade on two pylons, overhanging the tail with its top edge
+// above the roofline — the loudest thing on the car in the photos.
 function drawWing(ctx) {
-  // Blade + two struts off the rear deck.
-  ctx.fillStyle = "#2a2e35";
-  poly(ctx, [[-47, -6.5], [-44.6, -6.5], [-45.4, -14], [-47.8, -14]], "#2a2e35");
-  poly(ctx, [[-35, -7], [-32.6, -7], [-34.6, -14], [-37, -14]], "#2a2e35");
-  // Blade: lighter top face over a dark underside, so it reads as solid.
-  poly(ctx, [[-54, -13.4], [-28, -15.8], [-27.4, -13.6], [-53.6, -11.2]], "#0f1116");
-  poly(ctx, [[-54, -13.4], [-28, -15.8], [-28.6, -17.4], [-54.8, -15]], "#e8eaee");
-  // Endplate.
-  poly(ctx, [[-54.8, -15], [-51.4, -15.3], [-50.6, -10.6], [-54, -10.4]], "#c3c8d0");
+  // Pylons first, so the blade caps them. They stand on the rear deck
+  // and the blade's underside overlaps their tops, so the three parts
+  // always read as one assembly.
+  poly(ctx, [[-47.8, -7.0], [-44.4, -7.0], [-45.4, -15.2], [-48.4, -15.2]], TRIM_DARK);
+  poly(ctx, [[-34, -8.7], [-30.6, -8.7], [-31.8, -15.9], [-34.8, -15.9]], TRIM_DARK);
+  // Blade: bright top face over a dark underside = a solid slab.
+  poly(ctx, [[-55, -15.2], [-26, -16.2], [-25.8, -14.2], [-54.8, -13.2]], TRIM_DARK);
+  poly(ctx, [[-55, -15.2], [-26, -16.2], [-26.2, -18], [-55.2, -17]], TOP_FACET);
+  // Endplate standing off the outboard tip.
+  poly(ctx, [[-55.4, -17.3], [-51.8, -17.4], [-51.2, -12.6], [-54.8, -12.5]], "#c9ced6");
 }
 
 function drawBody(ctx, t, dead) {
-  // Outline, nose (+x) to tail (-x). The three facets below all hang
-  // off these same points so the panels never drift apart.
-  const BODY = [
-    [50, 5.5], // nose tip
-    [36, -0.5],
-    [20, -4.2],
-    [13, -4.6], // windscreen base
-    [1, -11.4], // roof front
-    [-15, -12.1], // roof rear
-    [-31, -6.6], // rear glass base
-    [-47, -5.4], // rear deck
-    [-50, 3], // tail
-    [-46, 9.5],
-    [40, 10.6],
-  ];
-
-  // Soft contact shadow so the car doesn't float flat against the sky.
+  // Contact shadow so the car doesn't sit flat against the sky.
   ctx.save();
   ctx.globalAlpha = dead ? 0.1 : 0.18;
   ctx.fillStyle = "#000";
   ctx.beginPath();
-  ctx.ellipse(-4, 19, 42, 4.5, 0, 0, 7);
+  ctx.ellipse(-3, 19, 43, 4.5, 0, 0, 7);
   ctx.fill();
   ctx.restore();
 
-  // 1. Top deck: the sliver of upper surface a 3/4 view shows.
-  poly(
-    ctx,
-    [
-      [50, 5.5],
-      [36, -0.5],
-      [20, -4.2],
-      [13, -4.6],
-      [1, -11.4],
-      [-15, -12.1],
-      [-31, -6.6],
-      [-47, -5.4],
-      [-50, 3],
-      [-45, 0.6],
-      [-30, -2.2],
-      [-8, -3.4],
-      [14, -1.6],
-      [33, 2.6],
-    ],
-    "#f3f4f7"
-  );
+  // 1. Top deck — the sliver of upper surface a 3/4 view shows.
+  poly(ctx, [...OUTLINE.slice(0, 9), ...rev(SHOULDER)], TOP_FACET);
+  // 2. Flank — the big body side.
+  poly(ctx, [...SHOULDER, ...rev(HIP)], FLANK_FACET);
+  // 3. Lower panel — same paint, turned away from the light.
+  poly(ctx, [...HIP, ...rev(ROCKER)], LOWER_FACET);
+  // 4. Rocker — black, full length, climbing into the diffuser.
+  poly(ctx, [...ROCKER, [-46, 9], [40, 10.5]], SKIRT);
 
-  // 2. Flank: the big white side panel.
-  poly(
-    ctx,
-    [
-      [50, 5.5],
-      [33, 2.6],
-      [14, -1.6],
-      [-8, -3.4],
-      [-30, -2.2],
-      [-45, 0.6],
-      [-50, 3],
-      [-48, 5.4],
-      [-30, 4.6],
-      [0, 4.2],
-      [30, 4.4],
-      [44, 5.2],
-    ],
-    "#d4d8de"
-  );
-
-  // 3. Skirt: the shadowed lower blade, dark like the renders.
-  poly(
-    ctx,
-    [
-      [44, 5.2],
-      [30, 4.4],
-      [0, 4.2],
-      [-30, 4.6],
-      [-48, 5.4],
-      [-46, 9.5],
-      [40, 10.6],
-    ],
-    "#1b1e24"
-  );
-
-  // Wheel arches cut into the flank, square-edged like the concept.
-  for (const cx of [25, -28]) {
+  // Square flat-topped arches cut through all four bands, then the
+  // flared lip that sits proud of the flank above each one.
+  for (const cx of [24, -27]) {
     poly(
       ctx,
       [
-        [cx - 10.5, 10.8],
-        [cx - 8.6, 2.6],
-        [cx + 8.6, 2.6],
-        [cx + 10.5, 10.8],
+        [cx - 11, 10.6],
+        [cx - 9.6, 1.6],
+        [cx + 9.6, 1.6],
+        [cx + 11, 10.6],
       ],
-      "#0b0d11"
+      "#0a0c10"
     );
     poly(
       ctx,
       [
-        [cx - 10.5, 4.4],
-        [cx - 8.6, 1.2],
-        [cx + 8.6, 1.2],
-        [cx + 10.5, 4.4],
+        [cx - 11, 3.4],
+        [cx - 9.6, 0],
+        [cx + 9.6, 0],
+        [cx + 11, 3.4],
       ],
-      "#e9ebef"
+      TOP_FACET
     );
   }
 
-  // Canopy: one dark wedge of glass, with a hard sheen stripe.
+  // Canopy: windscreen, roof and rear glass as one dark wedge.
   poly(
     ctx,
     [
-      [13, -4.6],
-      [1, -11.4],
-      [-15, -12.1],
-      [-31, -6.6],
-      [-27, -5.2],
-      [-6, -4.4],
-      [10, -3.6],
+      [15, -5.6],
+      [2, -12.6],
+      [-12, -13.3],
+      [-30, -9.5],
+      [-26, -7.6],
+      [-4, -6.2],
+      [12, -4.6],
     ],
-    "#0a0d13"
+    GLASS
   );
   ctx.save();
-  ctx.globalAlpha = 0.5;
-  poly(
-    ctx,
-    [
-      [10.5, -5.2],
-      [1.5, -10.4],
-      [-9, -10.8],
-      [-4, -6.4],
-    ],
-    "#5d7791"
-  );
+  ctx.globalAlpha = 0.45;
+  poly(ctx, [[12.4, -6], [2.6, -11.6], [-8, -12], [-2.4, -7.4]], "#5d7791");
   ctx.restore();
-  // Roof strip above the glass.
-  poly(ctx, [[1, -11.4], [-15, -12.1], [-16.4, -13.2], [0.4, -12.6]], "#1a1d23");
+  // Black roof panel along the top of the glass.
+  poly(ctx, [[2, -12.6], [-12, -13.3], [-13.4, -14.5], [1.4, -13.8]], TRIM_DARK);
 
-  // Panel cuts: a door shut line and the rear vent slats.
-  ctx.strokeStyle = "rgba(60,66,78,0.55)";
-  ctx.lineWidth = 0.55;
-  ctx.beginPath();
-  ctx.moveTo(10, -3.4);
-  ctx.lineTo(6, 3.8);
-  ctx.moveTo(-18, -3.2);
-  ctx.lineTo(-17, 4.3);
-  ctx.stroke();
-  ctx.strokeStyle = "rgba(40,45,55,0.7)";
-  ctx.lineWidth = 0.7;
+  // Vent slats on the rear quarter, behind the glass.
+  ctx.strokeStyle = "rgba(30,34,42,0.75)";
+  ctx.lineWidth = 0.75;
   ctx.beginPath();
   for (let i = 0; i < 4; i++) {
-    const x = -22 - i * 2.6;
-    ctx.moveTo(x, -3.9);
-    ctx.lineTo(x - 1.6, -1.6);
+    const x = -20 - i * 2.8;
+    ctx.moveTo(x, -6.4);
+    ctx.lineTo(x - 1.8, -4.2);
   }
   ctx.stroke();
 
-  // Shoulder highlight along the crease.
-  ctx.strokeStyle = "rgba(255,255,255,0.85)";
-  ctx.lineWidth = 0.8;
+  // Door shut line.
+  ctx.strokeStyle = "rgba(90,98,112,0.5)";
+  ctx.lineWidth = 0.55;
   ctx.beginPath();
-  ctx.moveTo(47, 4.6);
-  ctx.lineTo(33, 2.2);
-  ctx.lineTo(14, -2);
-  ctx.lineTo(-8, -3.8);
-  ctx.lineTo(-30, -2.6);
+  ctx.moveTo(12, -4.2);
+  ctx.lineTo(8, 3.4);
+  ctx.moveTo(-15, -4.8);
+  ctx.lineTo(-16, 3.2);
   ctx.stroke();
 
-  // Nose: splitter, headlight slit, side marker.
-  poly(ctx, [[50, 5.5], [44, 5.2], [40, 10.6], [49, 7.6]], "#15181d");
-  poly(ctx, [[46.8, 2.6], [39.5, 1.3], [39.3, 2.2], [46.6, 3.5]], "#eaf6ff");
-  poly(ctx, [[17.5, 0.2], [13.5, -0.4], [13.3, 1], [17.3, 1.6]], "#ff9b2f");
-  // Tail light bar.
-  poly(ctx, [[-49.6, 0.4], [-45.4, 0.1], [-45.6, 2], [-49.8, 2.3]], "#ff3a2f");
+  // Crisp highlight riding the shoulder crease.
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
+  ctx.lineWidth = 0.75;
+  ctx.beginPath();
+  ctx.moveTo(SHOULDER[0][0] - 3, SHOULDER[0][1]);
+  for (const [x, y] of SHOULDER.slice(1)) ctx.lineTo(x, y);
+  ctx.stroke();
+
+  // Nose: black splitter, thin light slit, orange door marker.
+  poly(ctx, [[48.4, 3.4], [46.4, 4.6], [40, 10.5], [48.2, 6.4]], SKIRT);
+  poly(ctx, [[47.6, 1.4], [38.6, -0.2], [38.3, 1.2], [47.3, 2.8]], TRIM_DARK);
+  poly(ctx, [[47, 1.8], [39.4, 0.4], [39.2, 1.2], [46.8, 2.6]], "#eaf6ff");
+  poly(ctx, [[19, -0.6], [14.6, -1.3], [14.4, 0.2], [18.8, 0.9]], "#ff9b2f");
+  // Tail light bar above the diffuser.
+  poly(ctx, [[-49.8, -0.6], [-44.6, -1.4], [-44.8, 0.8], [-50, 1.6]], "#ff3a2f");
 }

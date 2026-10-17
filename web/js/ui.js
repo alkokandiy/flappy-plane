@@ -29,6 +29,7 @@ export class IntroUI {
     this.newBest = document.getElementById("newBest");
     this.playBtn = document.getElementById("playBtn");
     this.garageBtn = document.getElementById("garageBtn");
+    this.menuBtn = document.getElementById("menuBtn");
     // Title screen only: the car name replaces "PLANE" once picked.
     this.introTitle = "FLAPPY<br />PLANE";
     this.playBtn.addEventListener("click", (e) => {
@@ -40,6 +41,13 @@ export class IntroUI {
 
   onGarage(fn) {
     this.garageBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      fn();
+    });
+  }
+
+  onMenu(fn) {
+    this.menuBtn.addEventListener("click", (e) => {
       e.preventDefault();
       fn();
     });
@@ -63,6 +71,7 @@ export class IntroUI {
     this.panel.hidden = true;
     this.playBtn.textContent = "▶ PLAY";
     this.bestScore.textContent = String(best);
+    this.stopWinVideo();
     this.show();
   }
 

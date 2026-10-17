@@ -29,6 +29,7 @@ export class Game {
       (id) => this.chooseVehicle(id)
     );
     this.ui.onGarage(() => this.openGarage());
+    this.ui.onMenu(() => this.goMenu());
     this.ui.setVehicleTitle(vehicleMeta(this.vehicleId).title);
     this.tickCount = 0;
     // Crash-page delay (1.2s at 30Hz): show the impact first, then the page.
@@ -73,9 +74,23 @@ export class Game {
 
   // --- garage ---
 
+  // Opening the garage from a finished run rewinds to the title screen,
+  // so closing it can never drop you back on a stale game-over state.
   openGarage() {
+    if (this.state !== "splash") this.toTitle();
     this.ui.hide();
     this.garage.open(this.vehicleId, () => this.ui.showIntro(this.best));
+  }
+
+  // Back to the title screen after a run, without a page reload.
+  goMenu() {
+    this.toTitle();
+    this.ui.showIntro(this.best);
+  }
+
+  toTitle() {
+    this.music.stop();
+    this.reset();
   }
 
   // Picking a vehicle rebuilds the run, so the new one is already on

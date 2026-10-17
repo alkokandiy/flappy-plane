@@ -89,6 +89,7 @@ export class Music {
   async findTrack() {
     if (window.FLAPPY_MUSIC_URL) {
       this.track = window.FLAPPY_MUSIC_URL;
+      this.prepare();
       return this.track;
     }
     try {
@@ -107,6 +108,7 @@ export class Music {
       found.sort();
       if (found.length > 0) {
         this.track = `${this.base}/${encodeURIComponent(found[0])}`;
+        this.prepare();
         return this.track;
       }
     } catch {
@@ -115,16 +117,34 @@ export class Music {
     return null;
   }
 
+  // Build the element and start buffering the moment the track is
+  // known — at boot, alongside the sprites. Downloading needs no user
+  // gesture (only playing does), so by the time PLAY is pressed the
+  // song is already in memory and starts on the beat. Creating it
+  // inside start() instead meant every run began with a silent wait
+  // for the whole file.
+  prepare() {
+    if (this.el || !this.track) return;
+    try {
+      this.el = new Audio();
+      this.el.loop = true;
+      this.el.volume = MUSIC_VOLUME;
+      this.el.preload = "auto";
+      this.el.src = this.track;
+      this.el.load();
+    } catch {
+      this.el = null;
+    }
+  }
+
   start() {
     if (!this.track) return;
+    this.prepare();
+    if (!this.el) return;
     try {
-      if (!this.el) {
-        this.el = new Audio(this.track);
-        this.el.loop = true;
-        this.el.volume = MUSIC_VOLUME;
-        this.el.preload = "auto";
-      }
-      this.el.currentTime = 0;
+      // Seeking an unbuffered element can stall, so only rewind when
+      // there is something to rewind.
+      if (this.el.currentTime > 0) this.el.currentTime = 0;
       const p = this.el.play();
       if (p && p.catch) p.catch(() => {});
     } catch {
